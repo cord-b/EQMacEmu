@@ -41,6 +41,7 @@ public:
 		int8_t      max_expansion;
 		std::string content_flags;
 		std::string content_flags_disabled;
+		int8_t      raid_target_spawnpoint;
 	};
 
 	static std::string PrimaryKey()
@@ -73,6 +74,7 @@ public:
 			"max_expansion",
 			"content_flags",
 			"content_flags_disabled",
+			"raid_target_spawnpoint",
 		};
 	}
 
@@ -101,6 +103,7 @@ public:
 			"max_expansion",
 			"content_flags",
 			"content_flags_disabled",
+			"raid_target_spawnpoint",
 		};
 	}
 
@@ -163,6 +166,7 @@ public:
 		e.max_expansion          = -1;
 		e.content_flags          = "";
 		e.content_flags_disabled = "";
+		e.raid_target_spawnpoint = 0;
 
 		return e;
 	}
@@ -221,7 +225,8 @@ public:
 			e.max_expansion          = row[19] ? static_cast<int8_t>(atoi(row[19])) : -1;
 			e.content_flags          = row[20] ? row[20] : "";
 			e.content_flags_disabled = row[21] ? row[21] : "";
-
+			e.raid_target_spawnpoint = row[22] ? static_cast<int8_t>(atoi(row[22])) : 0;
+			
 			return e;
 		}
 
@@ -275,6 +280,7 @@ public:
 		v.push_back(columns[19] + " = " + std::to_string(e.max_expansion));
 		v.push_back(columns[20] + " = '" + Strings::Escape(e.content_flags) + "'");
 		v.push_back(columns[21] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
+		v.push_back(columns[22] + " = " + std::to_string(e.raid_target_spawnpoint));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -318,7 +324,8 @@ public:
 		v.push_back(std::to_string(e.max_expansion));
 		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
 		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
-
+		v.push_back(std::to_string(e.raid_target_spawnpoint));
+		
 		auto results = db.QueryDatabase(
 			fmt::format(
 				"{} VALUES ({})",
@@ -369,7 +376,8 @@ public:
 			v.push_back(std::to_string(e.max_expansion));
 			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
 			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
-
+			v.push_back(std::to_string(e.raid_target_spawnpoint));
+			
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}
 
@@ -424,7 +432,8 @@ public:
 			e.max_expansion          = row[19] ? static_cast<int8_t>(atoi(row[19])) : -1;
 			e.content_flags          = row[20] ? row[20] : "";
 			e.content_flags_disabled = row[21] ? row[21] : "";
-
+			e.raid_target_spawnpoint = row[22] ? static_cast<int8_t>(atoi(row[22])) : 0;
+			
 			all_entries.push_back(e);
 		}
 
@@ -470,6 +479,7 @@ public:
 			e.max_expansion          = row[19] ? static_cast<int8_t>(atoi(row[19])) : -1;
 			e.content_flags          = row[20] ? row[20] : "";
 			e.content_flags_disabled = row[21] ? row[21] : "";
+			e.raid_target_spawnpoint = row[22] ? static_cast<int8_t>(atoi(row[22])) : 0;
 
 			all_entries.push_back(e);
 		}
@@ -566,6 +576,7 @@ public:
 		v.push_back(std::to_string(e.max_expansion));
 		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
 		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
+		v.push_back(std::to_string(e.raid_target_spawnpoint));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -610,6 +621,7 @@ public:
 			v.push_back(std::to_string(e.max_expansion));
 			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
 			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
+			v.push_back(std::to_string(e.raid_target_spawnpoint));
 
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}

@@ -29,6 +29,10 @@ public:
 		uint8_t  maxlevel;
 		uint8_t  multiplier;
 		float    disabled_chance;
+		float    min_expansion;
+		float    max_expansion;
+		int32_t  min_looter_level;
+		uint32_t item_loot_lockout_timer;
 	};
 
 	static std::string PrimaryKey()
@@ -48,6 +52,10 @@ public:
 			"maxlevel",
 			"multiplier",
 			"disabled_chance",
+			"min_expansion",
+			"max_expansion",
+			"min_looter_level",
+			"item_loot_lockout_timer",
 		};
 	}
 
@@ -63,6 +71,10 @@ public:
 			"maxlevel",
 			"multiplier",
 			"disabled_chance",
+			"min_expansion",
+			"max_expansion",
+			"min_looter_level",
+			"item_loot_lockout_timer",
 		};
 	}
 
@@ -112,7 +124,10 @@ public:
 		e.maxlevel        = 255;
 		e.multiplier      = 1;
 		e.disabled_chance = 0;
-
+		e.min_expansion = 0.0f;
+		e.max_expansion = 0.0f;
+		e.min_looter_level = 0;
+		e.item_loot_lockout_timer = 0;
 		return e;
 	}
 
@@ -157,7 +172,10 @@ public:
 			e.maxlevel        = static_cast<uint8_t>(strtoul(row[6], nullptr, 10));
 			e.multiplier      = static_cast<uint8_t>(strtoul(row[7], nullptr, 10));
 			e.disabled_chance = strtof(row[8], nullptr);
-
+			e.min_expansion = strtof(row[9], nullptr);
+			e.max_expansion = strtof(row[10], nullptr);
+			e.min_looter_level     = static_cast<int32_t>(strtoul(row[11], nullptr, 10));
+			e.item_loot_lockout_timer     = static_cast<uint32_t>(strtoul(row[12], nullptr, 10));
 			return e;
 		}
 
@@ -199,7 +217,11 @@ public:
 		v.push_back(columns[6] + " = " + std::to_string(e.maxlevel));
 		v.push_back(columns[7] + " = " + std::to_string(e.multiplier));
 		v.push_back(columns[8] + " = " + std::to_string(e.disabled_chance));
-
+		v.push_back(columns[9] + " = " + std::to_string(e.min_expansion));
+		v.push_back(columns[10] + " = " + std::to_string(e.max_expansion));
+		v.push_back(columns[11] + " = " + std::to_string(e.min_looter_level));
+		v.push_back(columns[12] + " = " + std::to_string(e.item_loot_lockout_timer));
+		
 		auto results = db.QueryDatabase(
 			fmt::format(
 				"UPDATE {} SET {} WHERE {} = {}",
@@ -229,7 +251,10 @@ public:
 		v.push_back(std::to_string(e.maxlevel));
 		v.push_back(std::to_string(e.multiplier));
 		v.push_back(std::to_string(e.disabled_chance));
-
+		v.push_back(std::to_string(e.min_expansion));
+		v.push_back(std::to_string(e.max_expansion));
+		v.push_back(std::to_string(e.min_looter_level));
+		v.push_back(std::to_string(e.item_loot_lockout_timer));
 		auto results = db.QueryDatabase(
 			fmt::format(
 				"{} VALUES ({})",
@@ -267,7 +292,10 @@ public:
 			v.push_back(std::to_string(e.maxlevel));
 			v.push_back(std::to_string(e.multiplier));
 			v.push_back(std::to_string(e.disabled_chance));
-
+			v.push_back(std::to_string(e.min_expansion));
+			v.push_back(std::to_string(e.max_expansion));
+			v.push_back(std::to_string(e.min_looter_level));
+			v.push_back(std::to_string(e.item_loot_lockout_timer));
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}
 
@@ -309,6 +337,10 @@ public:
 			e.maxlevel        = static_cast<uint8_t>(strtoul(row[6], nullptr, 10));
 			e.multiplier      = static_cast<uint8_t>(strtoul(row[7], nullptr, 10));
 			e.disabled_chance = strtof(row[8], nullptr);
+			e.min_expansion = strtof(row[9], nullptr);
+			e.max_expansion = strtof(row[10], nullptr);
+			e.min_looter_level     = static_cast<int32_t>(strtoul(row[11], nullptr, 10));
+			e.item_loot_lockout_timer     = static_cast<uint32_t>(strtoul(row[12], nullptr, 10));
 
 			all_entries.push_back(e);
 		}
@@ -342,7 +374,10 @@ public:
 			e.maxlevel        = static_cast<uint8_t>(strtoul(row[6], nullptr, 10));
 			e.multiplier      = static_cast<uint8_t>(strtoul(row[7], nullptr, 10));
 			e.disabled_chance = strtof(row[8], nullptr);
-
+			e.min_expansion = strtof(row[9], nullptr);
+			e.max_expansion = strtof(row[10], nullptr);
+			e.min_looter_level     = static_cast<int32_t>(strtoul(row[11], nullptr, 10));
+			e.item_loot_lockout_timer     = static_cast<uint32_t>(strtoul(row[12], nullptr, 10));
 			all_entries.push_back(e);
 		}
 
