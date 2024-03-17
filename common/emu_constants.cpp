@@ -309,9 +309,9 @@ std::string QuakeTypeToString(QuakeType in_type)
 	case QuakeType::QuakePVP:
 		out_stringtype = "PVP Quake";
 		break;
-	//case QuakeType::QuakeExtraMob:
-	//	out_stringtype = "Extra Target for Server Rotation";
-	//	break;
+		//case QuakeType::QuakeExtraMob:
+		//	out_stringtype = "Extra Target for Server Rotation";
+		//	break;
 	case QuakeType::QuakeDisabled:
 	case QuakeType::QuakeMax:
 	default:
@@ -319,6 +319,7 @@ std::string QuakeTypeToString(QuakeType in_type)
 		break;
 	}
 	return out_stringtype;
+}
 
 const std::map<uint32, std::string> &EQ::constants::GetAppearanceTypeMap()
 {

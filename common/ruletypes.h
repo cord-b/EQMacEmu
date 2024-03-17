@@ -23,6 +23,7 @@
 RULE_CATEGORY(Character)
 RULE_BOOL(Character, CanCreate, true, "")
 RULE_INT ( Character, MaxLevel, 65, "")
+RULE_INT(Character, MaxBetaBuffLevel, 25, "25")
 RULE_BOOL( Character, PerCharacterQglobalMaxLevel, false, "This will check for qglobal 'CharMaxLevel' character qglobal (Type 5), if player tries to level beyond that point, it will not go beyond that level")
 RULE_INT ( Character, MaxExpLevel, 0, "Sets the Max Level attainable via Experience")
 RULE_INT ( Character, DeathExpLossLevel, 10, "Any level greater than this will lose exp on death")
@@ -158,6 +159,8 @@ RULE_BOOL( AlKabor, AllowPetPull, false, "Allow Green Pet Pull (AK behavior is t
 RULE_BOOL( AlKabor, AllowTickSplit, false, "AK behavior is true")
 RULE_BOOL ( AlKabor, StripBuffsOnLowHP, true, "AK behavior is true")
 RULE_BOOL ( AlKabor, OutOfRangeGroupXPBonus, false, "AK behavior is true. When true, players out of range of the kill will still count towards the group bonus. (They will not receive XP.)  This enables the exploit that allowed a soloing player to recieve the entire 2.6x group bonus")
+
+RULE_BOOL(AlKabor, ClassicGroupEXPBonuses, false, "AK behavior is false.  If true, use the Clsasic to 1 month into Velious era group exp bonus. (2% for 2 members, up to 10% for 6 members)  This was the case from Launch until to Jan 2001 on PC.  False will use the Velious double bonus rules if enabled, or the post June 2003 bonus of 10% per additional member up to 80% if both Velious and Classic rules are disabled.")
 RULE_BOOL ( AlKabor, VeliousGroupEXPBonuses, false, "AK behavior is false.  If true, use the Velious to mid PoP era group exp bonus. (2% for 2 members, up to 20% for 6 members)  This was the case from Jan 2001 to June 2003 on PC.  (prior to that was a 6 man bonus of 10%)  False will use the post June 2003 bonus of 20% per aditional member up to 80%")
 RULE_BOOL ( AlKabor, GroupEXPBonuses, false, "AK behavior is true. When true, the broken 4-6 member group bonuses will be used.  Note: ClassicGroupEXPBonuses must be false for this to work")
 RULE_BOOL ( AlKabor, Count6thGroupMember, true, "AK behavior is true. When true, the 6th member of the group will count towards the split, thus reducing the XP everybody gets.  Note: this should be false if using the post June 2003 PC era exp rules is intended")
