@@ -207,8 +207,8 @@ public:
 		e.close_time          = 5;
 		e.can_open            = 1;
 		e.guild_zone_door	  = false;
-		e.min_expansion		  = 0;
-		e.max_expansion		  = 0;
+		e.min_expansion		  = -1;
+		e.max_expansion		  = -1;
 		e.content_flags          = "";
 		e.content_flags_disabled = "";
 		return e;
@@ -276,8 +276,8 @@ public:
 			e.close_time          = row[27] ? static_cast<int32_t>(atoi(row[27])) : 5;
 			e.can_open            = row[28] ? static_cast<int8_t>(atoi(row[28])) : 1;
 			e.guild_zone_door	  = row[29] ? static_cast<bool>(atoi(row[29])) : false;
-			e.min_expansion		  = row[30] ? static_cast<int8_t>(atoi(row[30])) : 0;
-			e.max_expansion		  = row[31] ? static_cast<int8_t>(atoi(row[31])) : 0;
+			e.min_expansion		  = row[30] ? static_cast<int8_t>(atoi(row[30])) : -1;
+			e.max_expansion		  = row[31] ? static_cast<int8_t>(atoi(row[31])) : -1;
 			e.content_flags          = row[32] ? row[32] : "";
 			e.content_flags_disabled = row[33] ? row[33] : "";
 			
@@ -585,8 +585,8 @@ public:
 			e.close_time          = row[27] ? static_cast<int32_t>(atoi(row[27])) : 5;
 			e.can_open            = row[28] ? static_cast<int8_t>(atoi(row[28])) : 1;
 			e.guild_zone_door	  = row[29] ? static_cast<bool>(atoi(row[29])) : 1;
-			e.min_expansion		  = row[30] ? static_cast<int8_t>(atoi(row[30])) : 0;
-			e.max_expansion		  = row[31] ? static_cast<int8_t>(atoi(row[31])) : 0;
+			e.min_expansion		  = row[30] ? static_cast<int8_t>(atoi(row[30])) : -1;
+			e.max_expansion		  = row[31] ? static_cast<int8_t>(atoi(row[31])) : -1;
 			e.content_flags          = row[32] ? row[32] : "";
 			e.content_flags_disabled = row[33] ? row[33] : "";
 

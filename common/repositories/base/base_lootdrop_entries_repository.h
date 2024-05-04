@@ -124,8 +124,8 @@ public:
 		e.maxlevel        = 255;
 		e.multiplier      = 1;
 		e.disabled_chance = 0;
-		e.min_expansion = 0.0f;
-		e.max_expansion = 0.0f;
+		e.min_expansion = -1.0f;
+		e.max_expansion = -1.0f;
 		e.min_looter_level = 0;
 		e.item_loot_lockout_timer = 0;
 		return e;
