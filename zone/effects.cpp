@@ -1018,6 +1018,8 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 
 	bool limit_all_aoes = false;
 
+	bool limit_all_detrimental_aes = false;
+
 	if (caster->IsNPC())
 		MAX_TARGETS_ALLOWED = 999;
 
@@ -1047,6 +1049,13 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 		{
 			MAX_TARGETS_ALLOWED = 4;
 		}
+	}
+
+
+	if (!limit_all_aoes && IsDetrimentalSpell(spell_id) && spells[spell_id].targettype == ST_AECaster && RuleB(Quarm, LimitPBAOEDetrimentalSpells))
+	{
+		MAX_TARGETS_ALLOWED = RuleI(Quarm, AOEMaxHostilePBAOETargets);
+		limit_all_aoes = true;
 	}
 
 	int targets_hit = 0;
@@ -1224,7 +1233,9 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 				caster->SpellOnTarget(spell_id, curmob, false, true, resist_adjust, false, ae_caster_id);
 				if (limit_all_aoes)
 				{
-					++targets_hit;
+
+					if(curmob->IsNPC())
+						++targets_hit;
 					if (targets_hit >= MAX_TARGETS_ALLOWED)
 						break;
 				}

@@ -1317,7 +1317,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	level = m_pp.level;
 	last_position_update_time = std::chrono::high_resolution_clock::now();
 	m_RewindLocation = glm::vec3();
-	m_LastLocation = glm::vec3();
+	m_LastLocation = glm::vec4();
 	m_Position.x = m_pp.x;
 	m_Position.y = m_pp.y;
 	m_Position.z = m_pp.z;
@@ -3070,6 +3070,10 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		SendPosUpdate();
 		return;
 	}
+
+	auto current_update_time = std::chrono::high_resolution_clock::now();
+	auto timeDiff = std::chrono::duration<double>(current_update_time - last_position_update_time);
+	
 	// client does crappy floor function below 0
 	if (ppu->x_pos < 0)
 		ppu->x_pos--;
@@ -3084,6 +3088,9 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		MovePCGuildID(freporte, GUILD_NONE, -1570.0f, -25.0f, 20.0f, 231.0f);
 		return;
 	}
+
+	if (IsDraggingCorpse())
+		DragCorpses();
 
 	//Check to see if PPU should trigger an update to the rewind position.
 	float rewind_x_diff = 0;
@@ -3106,14 +3113,15 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	if ((rewind_x_diff > 5000) || (rewind_y_diff > 5000))
 		m_RewindLocation = glm::vec3(ppu->x_pos, ppu->y_pos, (float)ppu->z_pos / 10.0f);
 
-	glm::vec3 newPosition(ppu->x_pos, ppu->y_pos, ppu->z_pos / 10.0f);
+	glm::vec4 newPosition(ppu->x_pos, ppu->y_pos, ppu->z_pos / 10.0f, ppu->heading);
 	bool bSkip = false;
-	if (m_LastLocation == glm::vec3())
+	if (m_LastLocation == glm::vec4())
 	{
 		m_LastLocation = newPosition;
 		m_Position.x = newPosition.x;
 		m_Position.y = newPosition.y;
 		m_Position.z = newPosition.z;
+		m_Position.w = newPosition.w;
 
 		bSkip = true;
 	}		
@@ -3261,7 +3269,6 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	m_RewindLocation = m_Position;
 	if (RuleB(Quarm, EnableProjectSpeedie))
 	{
-		auto current_update_time = std::chrono::high_resolution_clock::now();
 		auto timeDiff = std::chrono::duration<double>(current_update_time - last_position_update_time);
 		if (timeDiff.count() >= 1.0)
 		{
@@ -3693,6 +3700,11 @@ void Client::Handle_OP_CorpseDrag(const EQApplicationPacket *app)
 
 	CorpseDrag_Struct *cds = (CorpseDrag_Struct*)app->pBuffer;
 
+
+	cds->CorpseName[63] = '\0';
+
+	cds->DraggerName[63] = '\0';
+
 	Mob* corpse = entity_list.GetMob(cds->CorpseName);
 
 	if (!corpse || !corpse->IsPlayerCorpse() || corpse->CastToCorpse()->IsBeingLooted())
@@ -3716,6 +3728,50 @@ void Client::Handle_OP_CorpseDrag(const EQApplicationPacket *app)
 	DraggedCorpses.push_back(std::pair<std::string, uint16>(cds->CorpseName, corpse->GetID()));
 
 	Message_StringID(MT_DefaultText, CORPSEDRAG_BEGIN, cds->CorpseName);
+}
+
+void Client::Handle_OP_CorpseDrop(const EQApplicationPacket *app)
+{
+	if (app->size == 1 || app->size == 0)
+	{
+		Message_StringID(CC_Default, CORPSEDRAG_STOPALL);
+		ClearDraggedCorpses();
+		return;
+	}
+
+	VERIFY_PACKET_LENGTH(OP_CorpseDrop, app, CorpseDrag_Struct);
+
+	CorpseDrag_Struct *cds = (CorpseDrag_Struct*)app->pBuffer;
+
+	cds->CorpseName[63] = '\0';
+
+	cds->DraggerName[63] = '\0';
+
+	Mob* corpse = entity_list.GetMob(cds->CorpseName);
+
+	if (!corpse || !corpse->IsPlayerCorpse() || corpse->CastToCorpse()->IsBeingLooted())
+		return;
+
+	Client *c = entity_list.FindCorpseDragger(corpse->GetID());
+
+	if (c)
+	{
+		if (c == this)
+		{
+			for (auto It = DraggedCorpses.begin(); It != DraggedCorpses.end(); ++It) {
+				if (!strcasecmp(It->first.c_str(), cds->CorpseName))
+				{
+					It = DraggedCorpses.erase(It);
+					Message_StringID(MT_DefaultText, CORPSEDRAG_STOP, corpse->GetCleanName());
+					return;
+				}
+			}
+
+		}
+		else
+			Message_StringID(MT_DefaultText, CORPSEDRAG_SOMEONE_ELSE, corpse->GetCleanName());
+		return;
+	}
 }
 
 void Client::Handle_OP_CreateObject(const EQApplicationPacket *app)
