@@ -197,6 +197,9 @@ public:
 	int GetDamageBonus();
 	int GetHandToHandDamage();
 	int GetHandToHandDelay();
+	uint16 GetWeaponEffectID(int slot = EQ::invslot::slotPrimary);
+
+	void PermaGender(uint32 gender);
 
 	float GetQuiverHaste();
 	int	GetHasteCap();
@@ -379,19 +382,9 @@ public:
 	void SetMarried(const char* playerName);
 	bool IsMarried();
 
-	typedef struct {
-		glm::vec4 l_Position;
-		float last_distance;
-		bool  inside;
-	} DynamicPosition_Struct;
-	std::unordered_map<uint16, DynamicPosition_Struct> dynamic_positions;
-	inline void SetLastDistance(uint16 entity_id, float distance) { dynamic_positions[entity_id].last_distance = distance; }
-	inline float GetLastDistance(uint16 entity_id) { return dynamic_positions[entity_id].last_distance; }
-	inline bool GetInside(uint16 entity_id) { return dynamic_positions[entity_id].inside; }
-	inline void SetInside(uint16 entity_id, bool state) { dynamic_positions[entity_id].inside = state; }
-	inline glm::vec4 GetLastPosition(uint16 entity_id) { return dynamic_positions[entity_id].l_Position; }
-	inline void SetLastPosition(uint16 entity_id, const glm::vec4& pos) { dynamic_positions[entity_id].l_Position = pos; }
-	inline bool SameLastPosition(uint16 entity_id, const glm::vec4& pos) { return dynamic_positions[entity_id].l_Position == pos; }
+	inline uint8 GetCharExportFlag() { return m_epp.char_export_flag; };
+
+	void SetCharExportFlag(uint8 flag);
 
 	inline float ProximityX() const { return m_Proximity.x; }
 	inline float ProximityY() const { return m_Proximity.y; }
@@ -401,6 +394,13 @@ public:
 	/*
 			Begin client modifiers
 	*/
+
+
+
+
+
+
+
 
 	virtual void CalcBonuses();
 	inline virtual int32 GetAC() const { return AC; }			// this returns the value displayed in the client and is not used in calcs
@@ -775,7 +775,7 @@ public:
 
 
 	std::map<uint32, LootLockout> loot_lockouts;
-	std::map<uint16, LootItemLockout>	looted_legacy_items;
+	std::map<uint16, LootItemLockout> looted_legacy_items;
 	bool IsLootLockedOutOfNPC(uint32 npctype_id);
 
 
@@ -1174,6 +1174,7 @@ private:
 	uint16				duel_target;
 	bool				duelaccepted;
 	std::list<uint32>	keyring;
+	std::list<TempMerchantList> item_reimbursement_list;
 
 	bool				tellsoff;	// GM /toggle
 	bool				gmhideme;
@@ -1229,6 +1230,7 @@ private:
 	//Zoning related stuff
 	void SendZoneCancel(ZoneChange_Struct *zc);
 	void SendZoneError(ZoneChange_Struct *zc, int8 err);
+	void DoZoneMove(uint16 zone_id, uint32 zone_guild_id, float dest_x, float dest_y, float dest_z, float dest_h);
 	void DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, uint32 zone_guild_id, float dest_x, float dest_y, float dest_z, float dest_h, int8 ignore_r);
 	void ZonePC(uint32 zoneID, uint32 zoneGuildID, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm);
 	void ProcessMovePC(uint32 zoneID, uint32 zoneguildid, float x, float y, float z, float heading, uint8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
@@ -1261,7 +1263,6 @@ private:
 	Timer	charm_cast_timer;
 	Timer	qglobal_purge_timer;
 	Timer	TrackingTimer;
-	Timer	client_distance_timer;
 
 	Timer anon_toggle_timer;
 	Timer afk_toggle_timer;

@@ -139,6 +139,7 @@ void MapOpcodes()
 	ConnectedOpcodes[OP_Consume] = &Client::Handle_OP_Consume;
 	ConnectedOpcodes[OP_ControlBoat] = &Client::Handle_OP_ControlBoat;
 	ConnectedOpcodes[OP_CorpseDrag] = &Client::Handle_OP_CorpseDrag;
+	ConnectedOpcodes[OP_CorpseDrop] = &Client::Handle_OP_CorpseDrop;
 	ConnectedOpcodes[OP_Damage] = &Client::Handle_OP_Damage;
 	ConnectedOpcodes[OP_Death] = &Client::Handle_OP_Death;
 	ConnectedOpcodes[OP_DeleteCharge] = &Client::Handle_OP_DeleteCharge;
@@ -396,8 +397,6 @@ void Client::CompleteConnect()
 	hpupdate_timer.Start();
 	position_timer.Start();
 	autosave_timer.Start();
-	entity_list.UpdateNewClientDistances(this);
-	client_distance_timer.Start(2000, false);
 	SetDuelTarget(0);
 	SetDueling(false);
 
@@ -687,31 +686,74 @@ void Client::CompleteConnect()
 	SendToBoat(true);
 	worldserver.RequestTellQueue(GetName());
 
+	if (GetBaseRace() == IKSAR && IsMule() && RuleB(Quarm, RestrictIksarsToKunark) && zone)
+	{
+		Save();
+		WorldKick();
+		Disconnect();
+		return;
+	}
+
+
 	//enforce some rules..
 	if (!CanBeInZone()) {
 		Log(Logs::Detail, Logs::Status, "[CLIENT] Kicking char from zone, not allowed here");
-		if (m_pp.expansions & LuclinEQ)
+		if (RuleB(Quarm, RestrictIksarsToKunark) && zone)
 		{
-			GoToSafeCoords(database.GetZoneID("arena"), GUILD_NONE);
+			// Mules by their very nature require access to at least Luclin. Set that here.
+			if (IsMule() && GetBaseRace() != IKSAR)
+			{
+				if (RuleB(Quarm, EastCommonMules)) {
+					DoZoneMove(database.GetZoneID("ecommons"), GUILD_NONE, -164.0f, -1651.0f, 4.0f, 0.0f);
+				}
+				else {
+					DoZoneMove(database.GetZoneID("bazaar"), GUILD_NONE, 140.0f, -821.0f, 5.0f, 0.0f);
+				}
+			}
+			else if (IsMule() && GetBaseRace() == IKSAR)
+			{
+				//Do nothing, just dc.
+			}
+			else if (GetBaseRace() == IKSAR && zone->GetZoneExpansion() != KunarkEQ)
+			{
+				DoZoneMove(database.GetZoneID("fieldofbone"), GUILD_NONE, 1617.0f, -1684.0f, -50.0f, 0.0f);
+			}
+			else if (GetBaseRace() != IKSAR && zone->GetZoneExpansion() == KunarkEQ)
+			{
+				DoZoneMove(database.GetZoneID("ecommons"), GUILD_NONE, -164.0f, -1651.0f, 4.0f, 0.0f);
+			}
 		}
 		else
 		{
-			// Mules by their very nature require access to at least Luclin. Set that here.
-			if (IsMule())
+
+			if (m_pp.expansions & LuclinEQ)
 			{
 				if (RuleB(Quarm, EastCommonMules)) {
-					MovePC(database.GetZoneID("ecommons"), -164.0f, -1651.0f, 4.0f, 0.0f);
+					DoZoneMove(database.GetZoneID("ecommons"), GUILD_NONE, -164.0f, -1651.0f, 4.0f, 0.0f);
+
 				}
 				else {
-					m_pp.expansions = m_pp.expansions + LuclinEQ;
-					database.SetExpansion(AccountName(), m_pp.expansions);
-					GoToSafeCoords(database.GetZoneID("bazaar"), GUILD_NONE);
+					DoZoneMove(database.GetZoneID("bazaar"), GUILD_NONE, 140.0f, -821.0f, 5.0f, 0.0f);
 				}
 			}
-			else {
-				GoToSafeCoords(database.GetZoneID("arena"), GUILD_NONE);
+			else
+			{
+				// Mules by their very nature require access to at least Luclin. Set that here.
+				if (IsMule())
+				{
+					if (RuleB(Quarm, EastCommonMules)) {
+						DoZoneMove(database.GetZoneID("ecommons"), GUILD_NONE, -164.0f, -1651.0f, 4.0f, 0.0f);
+					}
+					else {
+						DoZoneMove(database.GetZoneID("bazaar"), GUILD_NONE, 140.0f, -821.0f, 5.0f, 0.0f);
+					}
+				}
+				else {
+					DoZoneMove(database.GetZoneID("ecommons"), GUILD_NONE, -164.0f, -1651.0f, 4.0f, 0.0f);
+				}
 			}
 		}
+		Disconnect();
 		return;
 	}
 
@@ -1030,8 +1072,8 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 				Log(Logs::General, Logs::Error, "Ghosting client: Account ID:%i Name:%s Character:%s IP:%s PORT:%d Incoming IP:%s PORT:%d",
 					client->AccountID(), client->AccountName(), client->GetName(), inet_ntoa(ghost_addr), ntohs(eqs->GetRemotePort()), inet_ntoa(local_addr), client->GetPort());
 				client->Save();
-				Kick();
-				eqs->Close();
+				client->Kick();
+				client->Disconnect();
 				return;
 			}
 		}
@@ -1059,7 +1101,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		if (client != 0 && client_state != CLIENT_AUTH_RECEIVED) {
 			Log(Logs::General, Logs::Error, "GetAuth() returned false kicking client");
 			client->Save();
-			client->Kick();
+			client->Disconnect();
 			return;
 		}
 		else {
@@ -1112,9 +1154,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 			Log(Logs::General, Logs::Error, "Ghosting client: Account ID:%i Name:%s Character:%s IP:%s PORT:%d Incoming IP:%s PORT:%d",
 				client->AccountID(), client->AccountName(), client->GetName(), inet_ntoa(ghost_addr), ntohs(eqs->GetRemotePort()), inet_ntoa(local_addr), client->GetPort());
 			client->Save();
-			Kick();
-			eqs->Close();
-			return;
+			client->HardDisconnect();
 		}
 	}
 
@@ -1177,7 +1217,8 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	database.LoadCharacterSpellBook(cid, &m_pp); /* Load Character Spell Book */
 	database.LoadCharacterMemmedSpells(cid, &m_pp);  /* Load Character Memorized Spells */
 	database.LoadCharacterLanguages(cid, &m_pp); /* Load Character Languages */
-	database.LoadCharacterLootLockouts(loot_lockouts, cid); /* Load CharacterTribute */
+	database.LoadCharacterLootLockouts(loot_lockouts, cid); /* Load Loot Lockouts */
+	database.LoadCharacterReimbursements(item_reimbursement_list, cid); /* Load Items for Reimbursement */
 	bool deletenorent = database.NoRentExpired(GetName());
 	if (loaditems && deletenorent) {
 		// client was offline for more than 30 minutes, delete no rent items
@@ -1522,7 +1563,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 
 	CalcBonuses();
 
-	if (m_pp.cur_hp <= 0)
+	if (m_pp.cur_hp <= -200)
 	{
 		m_pp.cur_hp = GetMaxHP();
 	}
@@ -1878,8 +1919,6 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	outapp->priority = 6;
 	FastQueuePacket(&outapp);
 
-	// this sets locations mobs were, when bulk zone spawns sent
-	entity_list.BulkNewClientDistances(this);
 	/* Zone Spawns Packet */
 	entity_list.SendZoneSpawnsBulk(this);
 	entity_list.SendZoneCorpsesBulk(this);
@@ -2142,6 +2181,17 @@ void Client::Handle_OP_AutoAttack(const EQApplicationPacket *app)
 		return;
 	}
 
+
+
+	if (RuleB(Quarm, RestrictIksarsToKunark))
+	{
+		if (GetBaseRace() == IKSAR && zone->GetZoneExpansion() == ClassicEQ)
+			return;
+		else if (GetBaseRace() != IKSAR && zone->GetZoneExpansion() == KunarkEQ)
+		{
+			return;
+		}
+	}
 
 	if (Admin() > 0)
 	{
@@ -2616,6 +2666,18 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 		std::cout << "Wrong size: OP_CastSpell, size=" << app->size << ", expected " << sizeof(CastSpell_Struct) << std::endl;
 		return;
 	}
+
+
+	if (RuleB(Quarm, RestrictIksarsToKunark))
+	{
+		if (GetBaseRace() == IKSAR && zone->GetZoneExpansion() == ClassicEQ)
+			return;
+		else if (GetBaseRace() != IKSAR && zone->GetZoneExpansion() == KunarkEQ)
+		{
+			return;
+		}
+	}
+
 	if (IsAIControlled() && !has_zomm) {
 		this->Message_StringID(CC_Red, NOT_IN_CONTROL);
 		return;
@@ -2704,6 +2766,13 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 			// Check for Mod Rod recast time.
 			if (castspell->spell_id == SPELL_MODULATION && !p_timers.Expired(&database, pTimerModulation))
 			{
+				InterruptSpell(SPELL_RECAST, CC_User_SpellFailure, castspell->spell_id);
+				return;
+			}
+
+			if (castspell->spell_id == SPELL_MANA_CONVERT && !zone->AllowManastoneClick())
+			{
+				Message_StringID(CC_Red, SPELL_DOES_NOT_WORK_HERE);
 				InterruptSpell(SPELL_RECAST, CC_User_SpellFailure, castspell->spell_id);
 				return;
 			}
@@ -2902,9 +2971,20 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 	auto* entity = entity_list.GetID(click_object->drop_id);
 	if (entity && entity->IsObject()) {
 		Object* object = entity->CastToObject();
+		
+		std::string msg;
+		if (RuleB(Quarm, RestrictIksarsToKunark))
+		{
+			if(GetBaseRace() == IKSAR && zone->GetZoneExpansion() == ClassicEQ)
+				msg = "You're not allowed to pick up dropped items if you're an Iksar in classic zones right now.";
+			else if (GetBaseRace() != IKSAR && zone->GetZoneExpansion() == KunarkEQ)
+			{
+				msg = "You're not allowed to pick up any items if you're a non-Iksar in Kunark zones right now.";
+			}
+		}
+		
 		if (object->IsPlayerDrop())
 		{
-			std::string msg;
 			if (Admin() > 0)
 			{
 				msg = "You cannot pick up dropped player items because you're a GM and that would make the players around you a sad panda.";
@@ -3776,6 +3856,18 @@ void Client::Handle_OP_CorpseDrop(const EQApplicationPacket *app)
 
 void Client::Handle_OP_CreateObject(const EQApplicationPacket *app)
 {
+
+
+	if (RuleB(Quarm, RestrictIksarsToKunark))
+	{
+		if (GetBaseRace() == IKSAR && zone->GetZoneExpansion() == ClassicEQ)
+			return;
+		else if (GetBaseRace() != IKSAR && zone->GetZoneExpansion() == KunarkEQ)
+		{
+			return;
+		}
+	}
+
 	if (Admin() > 0)
 	{
 		EQ::ItemInstance *inst = m_inv.GetItem(EQ::invslot::slotCursor);
@@ -6243,6 +6335,17 @@ void Client::Handle_OP_LootItem(const EQApplicationPacket *app)
 		return;
 	}
 
+
+	if (RuleB(Quarm, RestrictIksarsToKunark))
+	{
+		if (GetBaseRace() == IKSAR && zone->GetZoneExpansion() == ClassicEQ)
+			return;
+		else if (GetBaseRace() != IKSAR && zone->GetZoneExpansion() == KunarkEQ)
+		{
+			return;
+		}
+	}
+
 	auto* l = (LootingItem_Struct*)app->pBuffer;
 	auto entity = entity_list.GetID(*((uint16*)app->pBuffer));
 	if (!entity) {
@@ -7857,6 +7960,17 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 			sizeof(Merchant_Sell_Struct), app->size);
 		return;
 	}
+
+	if (RuleB(Quarm, RestrictIksarsToKunark))
+	{
+		if (GetBaseRace() == IKSAR && zone->GetZoneExpansion() == ClassicEQ)
+			return;
+		else if (GetBaseRace() != IKSAR && zone->GetZoneExpansion() == KunarkEQ)
+		{
+			return;
+		}
+	}
+
 	RDTSC_Timer t1;
 	t1.start();
 	Merchant_Sell_Struct* mp = (Merchant_Sell_Struct*)app->pBuffer;
@@ -7867,6 +7981,8 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 
 	int merchantid;
 	bool tmpmer_used = false;
+	bool reimbursement_used = false;
+
 	Mob* tmp = entity_list.GetMob(mp->npcid);
 	if (!tmp)
 	{
@@ -7895,7 +8011,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	mss->IsSold=1;
 	mss->quantity=0;
 
-	if (tmp == 0 || !tmp->IsNPC() || tmp->GetClass() != MERCHANT)
+	if (tmp == nullptr || !tmp->IsNPC() || tmp->GetClass() != MERCHANT)
 	{
 		QueuePacket(returnapp);
 		safe_delete(returnapp);
@@ -7905,7 +8021,8 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 
 	++tmp->CastToNPC()->shop_count;
 
-	if (mp->quantity < 1) return;
+	if (mp->quantity < 1)
+		return;
 
 	//you have to be somewhat close to them to be properly using them
 	if (DistanceSquared(m_Position, tmp->GetPosition()) > USE_NPC_RANGE2)
@@ -7917,65 +8034,87 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	}
 
 	merchantid = tmp->CastToNPC()->MerchantType;
-
 	uint32 item_id = 0;
+	uint32 prevcharges = 0;
 	uint8 quantity_left = 0;
-	std::list<MerchantList> merlist = zone->merchanttable[merchantid];
-	std::list<MerchantList>::const_iterator itr;
-	for (itr = merlist.begin(); itr != merlist.end(); ++itr){
-		MerchantList ml = *itr;
-		if (GetLevel() < ml.level_required) {
-			continue;
-		}
+	const EQ::ItemData* item = nullptr;
 
-		bool expansion_enabled = RuleR(World, CurrentExpansion) >= ml.min_expansion && RuleR(World, CurrentExpansion) < ml.max_expansion;
-		bool expansion_all = ml.min_expansion == 0.0f && ml.max_expansion == 0.0f;
-
-		if (!expansion_enabled && !expansion_all)
-		{
-			continue;
-		}
-
-		const EQ::ItemData* item = database.GetItem(ml.item);
-		if (!item)
-			continue;
-
-		int32 fac = tmp ? tmp->GetPrimaryFaction() : 0;
-		int32 facmod = GetModCharacterFactionLevel(fac);
-		if(IsInvisible(tmp))
-			facmod = 0;
-		if (fac != 0 && facmod < ml.faction_required && zone->CanDoCombat()) {
-			continue;
-		}
-
-		if(ml.quantity > 0 && ml.qty_left <= 0)
-		{
-			continue;
-		}
-
-		if (mp->itemslot == ml.slot){
-			item_id = ml.item;
-			if(ml.quantity > 0 && ml.qty_left > 0)
-			{
-				quantity_left = ml.qty_left;
+	if (merchantid != 1)
+	{
+		std::list<MerchantList> merlist = zone->merchanttable[merchantid];
+		std::list<MerchantList>::const_iterator itr;
+		for (itr = merlist.begin(); itr != merlist.end(); ++itr) {
+			MerchantList ml = *itr;
+			if (GetLevel() < ml.level_required) {
+				continue;
 			}
-			break;
+
+			bool expansion_enabled = RuleR(World, CurrentExpansion) >= ml.min_expansion && RuleR(World, CurrentExpansion) < ml.max_expansion;
+			bool expansion_all = ml.min_expansion == 0.0f && ml.max_expansion == 0.0f;
+
+			if (!expansion_enabled && !expansion_all)
+			{
+				continue;
+			}
+
+			const EQ::ItemData* item = database.GetItem(ml.item);
+			if (!item)
+				continue;
+
+			int32 fac = tmp ? tmp->GetPrimaryFaction() : 0;
+			int32 facmod = GetModCharacterFactionLevel(fac);
+			if (IsInvisible(tmp))
+				facmod = 0;
+			if (fac != 0 && facmod < ml.faction_required && zone->CanDoCombat()) {
+				continue;
+			}
+
+			if (ml.quantity > 0 && ml.qty_left <= 0)
+			{
+				continue;
+			}
+
+			if (mp->itemslot == ml.slot) {
+				item_id = ml.item;
+				if (ml.quantity > 0 && ml.qty_left > 0)
+				{
+					quantity_left = ml.qty_left;
+				}
+				break;
+			}
+		}
+
+		if (!IsSoloOnly() && !IsSelfFound())
+		{
+			if (item_id == 0)
+			{
+				//check to see if its on the temporary table
+				std::list<TempMerchantList> tmp_merlist = zone->tmpmerchanttable[tmp->GetNPCTypeID()];
+				std::list<TempMerchantList>::const_iterator tmp_itr;
+				TempMerchantList ml;
+				for (tmp_itr = tmp_merlist.begin(); tmp_itr != tmp_merlist.end(); ++tmp_itr) {
+					ml = *tmp_itr;
+					if (mp->itemslot == ml.slot) {
+						item_id = ml.item;
+						tmpmer_used = true;
+						prevcharges = ml.charges;
+						break;
+					}
+				}
+			}
 		}
 	}
-	const EQ::ItemData* item = nullptr;
-	uint32 prevcharges = 0;
-	if (!IsSoloOnly() && !IsSelfFound())
+	else if (merchantid == 1 && item_id == 0)
 	{
-		if (item_id == 0) { //check to see if its on the temporary table
-			std::list<TempMerchantList> tmp_merlist = zone->tmpmerchanttable[tmp->GetNPCTypeID()];
-			std::list<TempMerchantList>::const_iterator tmp_itr;
-			TempMerchantList ml;
-			for (tmp_itr = tmp_merlist.begin(); tmp_itr != tmp_merlist.end(); ++tmp_itr) {
-				ml = *tmp_itr;
-				if (mp->itemslot == ml.slot) {
-					item_id = ml.item;
+		for (auto item : item_reimbursement_list)
+		{
+			if (item.slot == mp->itemslot)
+			{
+				if (mp->itemslot == item.slot) {
+					item_id = item.item;
 					tmpmer_used = true;
-					prevcharges = ml.charges;
+					reimbursement_used = true;
+					prevcharges = item.charges;
 					break;
 				}
 			}
@@ -8018,22 +8157,31 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 
 	// This makes sure the vendor deletes charged items from their lists properly.
 	uint8 tmp_qty = 0;
-	// Temp merchantlist
-	if(tmpmer_used)
+	// Temp / reimbursement merchantlist
+	if (reimbursement_used)
+		tmp_qty = prevcharges > 240 ? 240 : prevcharges;
+	else if(tmpmer_used)
 		tmp_qty = prevcharges > 240 ? 240 : prevcharges;
 	// Regular merchantlist with limited supplies
 	else if(quantity_left > 0)
 		tmp_qty = quantity_left;
 
-	if ((tmpmer_used || quantity_left > 0) && (mp->quantity > tmp_qty || database.ItemQuantityType(item_id) == EQ::item::Quantity_Charges))
+	if ((reimbursement_used) && (mp->quantity > tmp_qty || database.ItemQuantityType(item_id) == EQ::item::Quantity_Charges))
 	{
-		if (database.ItemQuantityType(item_id) == EQ::item::Quantity_Charges && tmpmer_used) {
+		mp->quantity = tmp_qty;
+	}
+	else if ((tmpmer_used || quantity_left > 0) && (mp->quantity > tmp_qty || database.ItemQuantityType(item_id) == EQ::item::Quantity_Charges))
+	{
+		if (database.ItemQuantityType(item_id) == EQ::item::Quantity_Charges && tmpmer_used && !reimbursement_used) 
+		{
 			int32 temp_val = zone->GetTempMerchantQtyNoSlot(tmp->GetNPCTypeID(), item_id);
 			if (temp_val > 240 && temp_val != -1)
 				mp->quantity = 240;
 			else
 				mp->quantity = temp_val;
-		} else {
+		} 
+		else 
+		{
 			mp->quantity = tmp_qty;
 		}
 	}
@@ -8151,7 +8299,13 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	if (inst && (tmpmer_used || quantity_left > 0))
 	{
 		int32 new_charges = 0;
-		if(tmpmer_used)
+
+		if (reimbursement_used)
+		{
+			new_charges = prevcharges - mp->quantity;
+			zone->SaveReimbursementItem(item_reimbursement_list, character_id, item_id, new_charges);
+		}
+		else if(tmpmer_used)
 		{
 			new_charges = prevcharges - mp->quantity;
 			zone->SaveTempItem(merchantid, tmp->GetNPCTypeID(), item_id, new_charges);
@@ -8163,6 +8317,10 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 		}
 
 		int32 new_quantity = zone->GetTempMerchantQtyNoSlot(tmp->GetNPCTypeID(), item_id);
+
+		if (reimbursement_used)
+			new_quantity = 0;
+
 		if ((database.ItemQuantityType(item_id) == EQ::item::Quantity_Charges && new_quantity < 0) ||
 			(database.ItemQuantityType(item_id) != EQ::item::Quantity_Charges && new_charges <= 0))
 		{
@@ -8213,6 +8371,17 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 	}
 
 
+	if (RuleB(Quarm, RestrictIksarsToKunark))
+	{
+		if (GetBaseRace() == IKSAR && zone->GetZoneExpansion() == ClassicEQ)
+			return;
+		else if (GetBaseRace() != IKSAR && zone->GetZoneExpansion() == KunarkEQ)
+		{
+			return;
+		}
+	}
+
+
 	RDTSC_Timer t1(true);
 	Merchant_Purchase_Struct* mp = (Merchant_Purchase_Struct*)app->pBuffer;
 
@@ -8231,6 +8400,22 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 	uint32 itemid = GetItemIDAt(mp->itemslot);
 	if (itemid == 0)
 		return;
+
+	if (vendor->CastToNPC()->MerchantType == 1)
+	{
+		Message(CC_Red, "This merchant can only be bought from.");
+		auto outapp = new EQApplicationPacket(OP_ShopPlayerSell, sizeof(OldMerchant_Purchase_Struct));
+		OldMerchant_Purchase_Struct* mco = (OldMerchant_Purchase_Struct*)outapp->pBuffer;
+
+		mco->itemslot = 0;
+		mco->npcid = vendor->GetID();
+		mco->quantity = 0;
+		mco->price = 0;
+		mco->playerid = this->GetID();
+		QueuePacket(outapp);
+		safe_delete(outapp);
+		return;
+	}
 
 	if (Admin() > 0)
 	{
@@ -9297,6 +9482,17 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 void Client::Handle_OP_TraderBuy(const EQApplicationPacket *app) 
 {
 
+
+	if (RuleB(Quarm, RestrictIksarsToKunark))
+	{
+		if (GetBaseRace() == IKSAR && zone->GetZoneExpansion() == ClassicEQ)
+			return;
+		else if (GetBaseRace() != IKSAR && zone->GetZoneExpansion() == KunarkEQ)
+		{
+			return;
+		}
+	}
+
 	if (IsSoloOnly() || IsSelfFound())
 	{
 		TradeRequestFailed(app);
@@ -9344,6 +9540,16 @@ void Client::Handle_OP_TradeRequest(const EQApplicationPacket *app)
 	// Trade session not started until OP_TradeRequestAck is sent
 	if (!trade_timer.Check())
 		return;
+
+	if (RuleB(Quarm, RestrictIksarsToKunark))
+	{
+		if (GetBaseRace() == IKSAR && zone->GetZoneExpansion() == ClassicEQ)
+			return;
+		else if (GetBaseRace() != IKSAR && zone->GetZoneExpansion() == KunarkEQ)
+		{
+			return;
+		}
+	}
 
 	CommonBreakInvisible(true);
 
@@ -9473,6 +9679,17 @@ void Client::Handle_OP_TradeRequestAck(const EQApplicationPacket *app)
 		Log(Logs::General, Logs::Error, "Wrong size: OP_TradeRequestAck, size=%i, expected %i", app->size, sizeof(TradeRequest_Struct));
 		return;
 	}
+
+	if (RuleB(Quarm, RestrictIksarsToKunark))
+	{
+		if (GetBaseRace() == IKSAR && zone->GetZoneExpansion() == ClassicEQ)
+			return;
+		else if (GetBaseRace() != IKSAR && zone->GetZoneExpansion() == KunarkEQ)
+		{
+			return;
+		}
+	}
+
 	// Trade request recipient is acknowledging they are able to trade
 	// After this, the trade session has officially started
 	// Send ack on to trade initiator if client

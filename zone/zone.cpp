@@ -76,7 +76,7 @@ Mutex MZoneShutdown;
 
 volatile bool is_zone_loaded = false;
 Zone* zone = 0;
-
+const static std::set<std::string> arrClassicPlanes = { "hateplane", "airplane", "fearplane" };
 void UpdateWindowTitle(char* iNewTitle);
 
 bool Zone::Bootup(uint32 iZoneID, bool iStaticZone, uint32 iGuildID) {
@@ -422,6 +422,110 @@ int Zone::SaveTempItem(uint32 merchantid, uint32 npcid, uint32 item, int32 charg
 		ml2.quantity = 1;
 		tmp_merlist.push_back(ml2);
 		tmpmerchanttable[npcid] = tmp_merlist;
+	}
+	return freeslot;
+}
+
+
+int Zone::SaveReimbursementItem(std::list<TempMerchantList>& reimbursement_list, uint32 charid, uint32 item, int32 charges, bool sold) 
+{
+	int freeslot = 0;
+	std::list<TempMerchantList> tmp_merlist = reimbursement_list;
+	std::list<TempMerchantList>::const_iterator tmp_itr;
+	bool update_charges = false;
+	TempMerchantList ml;
+	uint32 i = 0;
+	while (freeslot == 0 && !update_charges) {
+		freeslot = i;
+		for (tmp_itr = tmp_merlist.begin(); tmp_itr != tmp_merlist.end(); ++tmp_itr) {
+			ml = *tmp_itr;
+			if (ml.item == item) {
+				update_charges = true;
+				freeslot = 0;
+				break;
+			}
+			if ((ml.slot == i) || (ml.origslot == i)) {
+				freeslot = 0;
+			}
+		}
+		i++;
+	}
+	if (update_charges)
+	{
+		tmp_merlist.clear();
+		std::list<TempMerchantList> oldtmp_merlist = reimbursement_list;
+		for (tmp_itr = oldtmp_merlist.begin(); tmp_itr != oldtmp_merlist.end(); ++tmp_itr)
+		{
+			TempMerchantList ml2 = *tmp_itr;
+			if (ml2.item != item)
+			{
+				//Push the items not affected back into the list. 
+				tmp_merlist.push_back(ml2);
+			}
+			else
+			{
+				bool deleted = false;
+				if (sold)
+				{
+					if (database.ItemQuantityType(item) != EQ::item::Quantity_Stacked)
+					{
+						++ml.quantity;
+					}
+
+					// The client has an internal limit of items per stack.
+					uint32 new_charges = ml.charges + charges > MERCHANT_CHARGE_CAP ? MERCHANT_CHARGE_CAP : ml.charges + charges;
+					ml.charges = new_charges;
+				}
+				else
+				{
+					if (database.ItemQuantityType(item) != EQ::item::Quantity_Stacked)
+					{
+						if (ml.quantity > 0)
+							--ml.quantity;
+						else
+							deleted = true;
+					}
+					ml.charges = charges;
+				}
+
+				if (!ml.origslot)
+					ml.origslot = ml.slot;
+
+				if (!deleted && ((database.ItemQuantityType(item) != EQ::item::Quantity_Stacked && ml.quantity > 0) || charges > 0)) //This is a save
+				{
+					database.SaveReimbursementItem(charid, ml.origslot, item, ml.charges, ml.quantity);
+					tmp_merlist.push_back(ml);
+					Log(Logs::General, Logs::Trading, "%d SAVED to temp in slot %d with charges/qty %d/%d", item, ml.origslot, ml.charges, ml.quantity);
+				}
+				else //This is a delete
+				{
+					database.DeleteReimbursementItem(charid, ml.origslot);
+					Log(Logs::General, Logs::Trading, "%d DELETED from temp in slot %d", item, ml.origslot);
+				}
+			}
+		}
+		reimbursement_list = tmp_merlist;
+
+		if (sold)
+			return ml.slot;
+
+	}
+	if (freeslot) {
+		if (charges < 0) //sanity check only, shouldnt happen
+			charges = 0x7FFF;
+		database.SaveReimbursementItem(charid, freeslot, item, charges, 1);
+		Log(Logs::General, Logs::Trading, "%d ADDED to temp in slot %d with charges/qty %d/%d", item, freeslot, charges, 1);
+
+		tmp_merlist = reimbursement_list;
+		TempMerchantList ml2;
+		ml2.charges = charges;
+		ml2.item = item;
+		ml2.npcid = charid;
+		ml2.slot = freeslot;
+		ml2.origslot = ml2.slot;
+		ml2.quantity = 1;
+		tmp_merlist.push_back(ml2);
+		reimbursement_list = tmp_merlist;
 	}
 	return freeslot;
 }
@@ -1097,6 +1201,9 @@ void Zone::ReloadStaticData() {
 	LogInfo("Reloading KeyRing Data...");
 	KeyRingDataList.Clear();
 	zone->LoadKeyRingData(&KeyRingDataList);
+
+	LogInfo("Reloading Zone Data...");
+	database.GetZoneLongName(short_name, &long_name, file_name, &m_SafePoint.x, &m_SafePoint.y, &m_SafePoint.z, &pgraveyard_id, &pgraveyard_timer, &pMaxClients);
 
 	//load the zone config file.
 	if (!LoadZoneCFG(zone->GetShortName(), true)) { // try loading the zone name...
@@ -2784,4 +2891,15 @@ void Zone::LoadGrids()
 Timer Zone::GetInitgridsTimer()
 {
 	return initgrids_timer;
+}
+
+bool Zone::AllowManastoneClick()
+{
+	if (GetZoneExpansion() != ClassicEQ) {
+		return false;
+	}
+	if (arrClassicPlanes.find(GetShortName()) != arrClassicPlanes.end()) {
+		return false;
+	}
+	return true;
 }
