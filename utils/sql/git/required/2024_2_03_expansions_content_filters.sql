@@ -191,3 +191,7 @@ CREATE TABLE `global_loot`  (
   `content_flags_disabled` varchar(100) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 40000000 CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = Dynamic;
+
+ALTER TABLE `npc_types` 
+ADD COLUMN `skip_global_loot` tinyint(4) NULL DEFAULT 0 AFTER `instance_spawn_timer_override`,
+ADD COLUMN `rare_spawn` tinyint(4) NULL DEFAULT 0 AFTER `skip_global_loot`;
