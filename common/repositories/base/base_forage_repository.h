@@ -6,7 +6,7 @@
  * Any modifications to base repositories are to be made by the generator only
  *
  * @generator ./utils/scripts/generators/repository-generator.pl
- * @docs https://docs.eqemu.io/developer/repositories
+ * @docs https://eqemu.gitbook.io/server/in-development/developer-area/repositories
  */
 
 #ifndef EQEMU_BASE_FORAGE_REPOSITORY_H
@@ -24,8 +24,6 @@ public:
 		int32_t     Itemid;
 		int16_t     level;
 		int16_t     chance;
-		int8_t      min_expansion;
-		int8_t      max_expansion;
 		std::string content_flags;
 		std::string content_flags_disabled;
 	};
@@ -43,8 +41,6 @@ public:
 			"Itemid",
 			"level",
 			"chance",
-			"min_expansion",
-			"max_expansion",
 			"content_flags",
 			"content_flags_disabled",
 		};
@@ -58,8 +54,6 @@ public:
 			"Itemid",
 			"level",
 			"chance",
-			"min_expansion",
-			"max_expansion",
 			"content_flags",
 			"content_flags_disabled",
 		};
@@ -107,8 +101,6 @@ public:
 		e.Itemid                 = 0;
 		e.level                  = 0;
 		e.chance                 = 0;
-		e.min_expansion          = -1;
-		e.max_expansion          = -1;
 		e.content_flags          = "";
 		e.content_flags_disabled = "";
 
@@ -152,10 +144,8 @@ public:
 			e.Itemid                 = row[2] ? static_cast<int32_t>(atoi(row[2])) : 0;
 			e.level                  = row[3] ? static_cast<int16_t>(atoi(row[3])) : 0;
 			e.chance                 = row[4] ? static_cast<int16_t>(atoi(row[4])) : 0;
-			e.min_expansion          = row[5] ? static_cast<int8_t>(atoi(row[5])) : -1;
-			e.max_expansion          = row[6] ? static_cast<int8_t>(atoi(row[6])) : -1;
-			e.content_flags          = row[7] ? row[7] : "";
-			e.content_flags_disabled = row[8] ? row[8] : "";
+			e.content_flags          = row[5] ? row[5] : "";
+			e.content_flags_disabled = row[6] ? row[6] : "";
 
 			return e;
 		}
@@ -193,10 +183,8 @@ public:
 		v.push_back(columns[2] + " = " + std::to_string(e.Itemid));
 		v.push_back(columns[3] + " = " + std::to_string(e.level));
 		v.push_back(columns[4] + " = " + std::to_string(e.chance));
-		v.push_back(columns[5] + " = " + std::to_string(e.min_expansion));
-		v.push_back(columns[6] + " = " + std::to_string(e.max_expansion));
-		v.push_back(columns[7] + " = '" + Strings::Escape(e.content_flags) + "'");
-		v.push_back(columns[8] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
+		v.push_back(columns[5] + " = '" + Strings::Escape(e.content_flags) + "'");
+		v.push_back(columns[6] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -223,8 +211,6 @@ public:
 		v.push_back(std::to_string(e.Itemid));
 		v.push_back(std::to_string(e.level));
 		v.push_back(std::to_string(e.chance));
-		v.push_back(std::to_string(e.min_expansion));
-		v.push_back(std::to_string(e.max_expansion));
 		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
 		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
 
@@ -261,8 +247,6 @@ public:
 			v.push_back(std::to_string(e.Itemid));
 			v.push_back(std::to_string(e.level));
 			v.push_back(std::to_string(e.chance));
-			v.push_back(std::to_string(e.min_expansion));
-			v.push_back(std::to_string(e.max_expansion));
 			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
 			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
 
@@ -303,10 +287,8 @@ public:
 			e.Itemid                 = row[2] ? static_cast<int32_t>(atoi(row[2])) : 0;
 			e.level                  = row[3] ? static_cast<int16_t>(atoi(row[3])) : 0;
 			e.chance                 = row[4] ? static_cast<int16_t>(atoi(row[4])) : 0;
-			e.min_expansion          = row[5] ? static_cast<int8_t>(atoi(row[5])) : -1;
-			e.max_expansion          = row[6] ? static_cast<int8_t>(atoi(row[6])) : -1;
-			e.content_flags          = row[7] ? row[7] : "";
-			e.content_flags_disabled = row[8] ? row[8] : "";
+			e.content_flags          = row[5] ? row[5] : "";
+			e.content_flags_disabled = row[6] ? row[6] : "";
 
 			all_entries.push_back(e);
 		}
@@ -336,10 +318,8 @@ public:
 			e.Itemid                 = row[2] ? static_cast<int32_t>(atoi(row[2])) : 0;
 			e.level                  = row[3] ? static_cast<int16_t>(atoi(row[3])) : 0;
 			e.chance                 = row[4] ? static_cast<int16_t>(atoi(row[4])) : 0;
-			e.min_expansion          = row[5] ? static_cast<int8_t>(atoi(row[5])) : -1;
-			e.max_expansion          = row[6] ? static_cast<int8_t>(atoi(row[6])) : -1;
-			e.content_flags          = row[7] ? row[7] : "";
-			e.content_flags_disabled = row[8] ? row[8] : "";
+			e.content_flags          = row[5] ? row[5] : "";
+			e.content_flags_disabled = row[6] ? row[6] : "";
 
 			all_entries.push_back(e);
 		}
@@ -398,78 +378,6 @@ public:
 		return (results.Success() && results.begin()[0] ? strtoll(results.begin()[0], nullptr, 10) : 0);
 	}
 
-	static std::string BaseReplace()
-	{
-		return fmt::format(
-			"REPLACE INTO {} ({}) ",
-			TableName(),
-			ColumnsRaw()
-		);
-	}
-
-	static int ReplaceOne(
-		Database& db,
-		const Forage &e
-	)
-	{
-		std::vector<std::string> v;
-
-		v.push_back(std::to_string(e.id));
-		v.push_back(std::to_string(e.zoneid));
-		v.push_back(std::to_string(e.Itemid));
-		v.push_back(std::to_string(e.level));
-		v.push_back(std::to_string(e.chance));
-		v.push_back(std::to_string(e.min_expansion));
-		v.push_back(std::to_string(e.max_expansion));
-		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
-		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
-
-		auto results = db.QueryDatabase(
-			fmt::format(
-				"{} VALUES ({})",
-				BaseReplace(),
-				Strings::Implode(",", v)
-			)
-		);
-
-		return (results.Success() ? results.RowsAffected() : 0);
-	}
-
-	static int ReplaceMany(
-		Database& db,
-		const std::vector<Forage> &entries
-	)
-	{
-		std::vector<std::string> insert_chunks;
-
-		for (auto &e: entries) {
-			std::vector<std::string> v;
-
-			v.push_back(std::to_string(e.id));
-			v.push_back(std::to_string(e.zoneid));
-			v.push_back(std::to_string(e.Itemid));
-			v.push_back(std::to_string(e.level));
-			v.push_back(std::to_string(e.chance));
-			v.push_back(std::to_string(e.min_expansion));
-			v.push_back(std::to_string(e.max_expansion));
-			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
-			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
-
-			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
-		}
-
-		std::vector<std::string> v;
-
-		auto results = db.QueryDatabase(
-			fmt::format(
-				"{} VALUES {}",
-				BaseReplace(),
-				Strings::Implode(",", insert_chunks)
-			)
-		);
-
-		return (results.Success() ? results.RowsAffected() : 0);
-	}
 };
 
 #endif //EQEMU_BASE_FORAGE_REPOSITORY_H

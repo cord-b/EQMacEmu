@@ -6,7 +6,7 @@
  * Any modifications to base repositories are to be made by the generator only
  *
  * @generator ./utils/scripts/generators/repository-generator.pl
- * @docs https://docs.eqemu.io/developer/repositories
+ * @docs https://eqemu.gitbook.io/server/in-development/developer-area/repositories
  */
 
 #ifndef EQEMU_BASE_START_ZONES_REPOSITORY_H
@@ -34,10 +34,10 @@ public:
 		float       bind_y;
 		float       bind_z;
 		uint8_t     select_rank;
-		int8_t      min_expansion;
-		int8_t      max_expansion;
 		std::string content_flags;
 		std::string content_flags_disabled;
+		float       min_expansion;
+		float       max_expansion;
 	};
 
 	static std::string PrimaryKey()
@@ -63,10 +63,10 @@ public:
 			"bind_y",
 			"bind_z",
 			"select_rank",
-			"min_expansion",
-			"max_expansion",
 			"content_flags",
 			"content_flags_disabled",
+			"min_expansion",
+			"max_expansion",
 		};
 	}
 
@@ -88,10 +88,10 @@ public:
 			"bind_y",
 			"bind_z",
 			"select_rank",
-			"min_expansion",
-			"max_expansion",
 			"content_flags",
 			"content_flags_disabled",
+			"min_expansion",
+			"max_expansion",
 		};
 	}
 
@@ -147,10 +147,10 @@ public:
 		e.bind_y                 = 0;
 		e.bind_z                 = 0;
 		e.select_rank            = 50;
-		e.min_expansion          = -1;
-		e.max_expansion          = -1;
 		e.content_flags          = "";
 		e.content_flags_disabled = "";
+		e.min_expansion          = -1;
+		e.max_expansion          = -1;
 
 		return e;
 	}
@@ -202,10 +202,10 @@ public:
 			e.bind_y                 = row[12] ? strtof(row[12], nullptr) : 0;
 			e.bind_z                 = row[13] ? strtof(row[13], nullptr) : 0;
 			e.select_rank            = row[14] ? static_cast<uint8_t>(strtoul(row[14], nullptr, 10)) : 50;
-			e.min_expansion          = row[15] ? static_cast<int8_t>(atoi(row[15])) : -1;
-			e.max_expansion          = row[16] ? static_cast<int8_t>(atoi(row[16])) : -1;
-			e.content_flags          = row[17] ? row[17] : "";
-			e.content_flags_disabled = row[18] ? row[18] : "";
+			e.content_flags          = row[15] ? row[15] : "";
+			e.content_flags_disabled = row[16] ? row[16] : "";
+			e.min_expansion          = row[17] ? strtof(row[17], nullptr) : -1;
+			e.max_expansion          = row[18] ? strtof(row[18], nullptr) : -1;
 
 			return e;
 		}
@@ -254,10 +254,10 @@ public:
 		v.push_back(columns[12] + " = " + std::to_string(e.bind_y));
 		v.push_back(columns[13] + " = " + std::to_string(e.bind_z));
 		v.push_back(columns[14] + " = " + std::to_string(e.select_rank));
-		v.push_back(columns[15] + " = " + std::to_string(e.min_expansion));
-		v.push_back(columns[16] + " = " + std::to_string(e.max_expansion));
-		v.push_back(columns[17] + " = '" + Strings::Escape(e.content_flags) + "'");
-		v.push_back(columns[18] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
+		v.push_back(columns[15] + " = '" + Strings::Escape(e.content_flags) + "'");
+		v.push_back(columns[16] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
+		v.push_back(columns[17] + " = " + std::to_string(e.min_expansion));
+		v.push_back(columns[18] + " = " + std::to_string(e.max_expansion));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -294,10 +294,10 @@ public:
 		v.push_back(std::to_string(e.bind_y));
 		v.push_back(std::to_string(e.bind_z));
 		v.push_back(std::to_string(e.select_rank));
-		v.push_back(std::to_string(e.min_expansion));
-		v.push_back(std::to_string(e.max_expansion));
 		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
 		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
+		v.push_back(std::to_string(e.min_expansion));
+		v.push_back(std::to_string(e.max_expansion));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -342,10 +342,10 @@ public:
 			v.push_back(std::to_string(e.bind_y));
 			v.push_back(std::to_string(e.bind_z));
 			v.push_back(std::to_string(e.select_rank));
-			v.push_back(std::to_string(e.min_expansion));
-			v.push_back(std::to_string(e.max_expansion));
 			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
 			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
+			v.push_back(std::to_string(e.min_expansion));
+			v.push_back(std::to_string(e.max_expansion));
 
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}
@@ -394,10 +394,10 @@ public:
 			e.bind_y                 = row[12] ? strtof(row[12], nullptr) : 0;
 			e.bind_z                 = row[13] ? strtof(row[13], nullptr) : 0;
 			e.select_rank            = row[14] ? static_cast<uint8_t>(strtoul(row[14], nullptr, 10)) : 50;
-			e.min_expansion          = row[15] ? static_cast<int8_t>(atoi(row[15])) : -1;
-			e.max_expansion          = row[16] ? static_cast<int8_t>(atoi(row[16])) : -1;
-			e.content_flags          = row[17] ? row[17] : "";
-			e.content_flags_disabled = row[18] ? row[18] : "";
+			e.content_flags          = row[15] ? row[15] : "";
+			e.content_flags_disabled = row[16] ? row[16] : "";
+			e.min_expansion          = row[17] ? strtof(row[17], nullptr) : -1;
+			e.max_expansion          = row[18] ? strtof(row[18], nullptr) : -1;
 
 			all_entries.push_back(e);
 		}
@@ -437,10 +437,10 @@ public:
 			e.bind_y                 = row[12] ? strtof(row[12], nullptr) : 0;
 			e.bind_z                 = row[13] ? strtof(row[13], nullptr) : 0;
 			e.select_rank            = row[14] ? static_cast<uint8_t>(strtoul(row[14], nullptr, 10)) : 50;
-			e.min_expansion          = row[15] ? static_cast<int8_t>(atoi(row[15])) : -1;
-			e.max_expansion          = row[16] ? static_cast<int8_t>(atoi(row[16])) : -1;
-			e.content_flags          = row[17] ? row[17] : "";
-			e.content_flags_disabled = row[18] ? row[18] : "";
+			e.content_flags          = row[15] ? row[15] : "";
+			e.content_flags_disabled = row[16] ? row[16] : "";
+			e.min_expansion          = row[17] ? strtof(row[17], nullptr) : -1;
+			e.max_expansion          = row[18] ? strtof(row[18], nullptr) : -1;
 
 			all_entries.push_back(e);
 		}
@@ -499,98 +499,6 @@ public:
 		return (results.Success() && results.begin()[0] ? strtoll(results.begin()[0], nullptr, 10) : 0);
 	}
 
-	static std::string BaseReplace()
-	{
-		return fmt::format(
-			"REPLACE INTO {} ({}) ",
-			TableName(),
-			ColumnsRaw()
-		);
-	}
-
-	static int ReplaceOne(
-		Database& db,
-		const StartZones &e
-	)
-	{
-		std::vector<std::string> v;
-
-		v.push_back(std::to_string(e.x));
-		v.push_back(std::to_string(e.y));
-		v.push_back(std::to_string(e.z));
-		v.push_back(std::to_string(e.heading));
-		v.push_back(std::to_string(e.zone_id));
-		v.push_back(std::to_string(e.bind_id));
-		v.push_back(std::to_string(e.player_choice));
-		v.push_back(std::to_string(e.player_class));
-		v.push_back(std::to_string(e.player_deity));
-		v.push_back(std::to_string(e.player_race));
-		v.push_back(std::to_string(e.start_zone));
-		v.push_back(std::to_string(e.bind_x));
-		v.push_back(std::to_string(e.bind_y));
-		v.push_back(std::to_string(e.bind_z));
-		v.push_back(std::to_string(e.select_rank));
-		v.push_back(std::to_string(e.min_expansion));
-		v.push_back(std::to_string(e.max_expansion));
-		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
-		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
-
-		auto results = db.QueryDatabase(
-			fmt::format(
-				"{} VALUES ({})",
-				BaseReplace(),
-				Strings::Implode(",", v)
-			)
-		);
-
-		return (results.Success() ? results.RowsAffected() : 0);
-	}
-
-	static int ReplaceMany(
-		Database& db,
-		const std::vector<StartZones> &entries
-	)
-	{
-		std::vector<std::string> insert_chunks;
-
-		for (auto &e: entries) {
-			std::vector<std::string> v;
-
-			v.push_back(std::to_string(e.x));
-			v.push_back(std::to_string(e.y));
-			v.push_back(std::to_string(e.z));
-			v.push_back(std::to_string(e.heading));
-			v.push_back(std::to_string(e.zone_id));
-			v.push_back(std::to_string(e.bind_id));
-			v.push_back(std::to_string(e.player_choice));
-			v.push_back(std::to_string(e.player_class));
-			v.push_back(std::to_string(e.player_deity));
-			v.push_back(std::to_string(e.player_race));
-			v.push_back(std::to_string(e.start_zone));
-			v.push_back(std::to_string(e.bind_x));
-			v.push_back(std::to_string(e.bind_y));
-			v.push_back(std::to_string(e.bind_z));
-			v.push_back(std::to_string(e.select_rank));
-			v.push_back(std::to_string(e.min_expansion));
-			v.push_back(std::to_string(e.max_expansion));
-			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
-			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
-
-			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
-		}
-
-		std::vector<std::string> v;
-
-		auto results = db.QueryDatabase(
-			fmt::format(
-				"{} VALUES {}",
-				BaseReplace(),
-				Strings::Implode(",", insert_chunks)
-			)
-		);
-
-		return (results.Success() ? results.RowsAffected() : 0);
-	}
 };
 
 #endif //EQEMU_BASE_START_ZONES_REPOSITORY_H

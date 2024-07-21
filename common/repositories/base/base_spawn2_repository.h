@@ -6,7 +6,7 @@
  * Any modifications to base repositories are to be made by the generator only
  *
  * @generator ./utils/scripts/generators/repository-generator.pl
- * @docs https://docs.eqemu.io/developer/repositories
+ * @docs https://eqemu.gitbook.io/server/in-development/developer-area/repositories
  */
 
 #ifndef EQEMU_BASE_SPAWN2_REPOSITORY_H
@@ -37,11 +37,11 @@ public:
 		int8_t      clear_timer_onboot;
 		int32_t     boot_variance;
 		int8_t      force_z;
-		int8_t      min_expansion;
-		int8_t      max_expansion;
+		float       min_expansion;
+		float       max_expansion;
+		uint8_t     raid_target_spawnpoint;
 		std::string content_flags;
 		std::string content_flags_disabled;
-		int8_t      raid_target_spawnpoint;
 	};
 
 	static std::string PrimaryKey()
@@ -72,9 +72,9 @@ public:
 			"force_z",
 			"min_expansion",
 			"max_expansion",
+			"raid_target_spawnpoint",
 			"content_flags",
 			"content_flags_disabled",
-			"raid_target_spawnpoint",
 		};
 	}
 
@@ -101,9 +101,9 @@ public:
 			"force_z",
 			"min_expansion",
 			"max_expansion",
+			"raid_target_spawnpoint",
 			"content_flags",
 			"content_flags_disabled",
-			"raid_target_spawnpoint",
 		};
 	}
 
@@ -164,9 +164,9 @@ public:
 		e.force_z                = 0;
 		e.min_expansion          = -1;
 		e.max_expansion          = -1;
+		e.raid_target_spawnpoint = 0;
 		e.content_flags          = "";
 		e.content_flags_disabled = "";
-		e.raid_target_spawnpoint = 0;
 
 		return e;
 	}
@@ -221,12 +221,12 @@ public:
 			e.clear_timer_onboot     = row[15] ? static_cast<int8_t>(atoi(row[15])) : 0;
 			e.boot_variance          = row[16] ? static_cast<int32_t>(atoi(row[16])) : 0;
 			e.force_z                = row[17] ? static_cast<int8_t>(atoi(row[17])) : 0;
-			e.min_expansion          = row[18] ? static_cast<int8_t>(atoi(row[18])) : -1;
-			e.max_expansion          = row[19] ? static_cast<int8_t>(atoi(row[19])) : -1;
-			e.content_flags          = row[20] ? row[20] : "";
-			e.content_flags_disabled = row[21] ? row[21] : "";
-			e.raid_target_spawnpoint = row[22] ? static_cast<int8_t>(atoi(row[22])) : 0;
-			
+			e.min_expansion          = row[18] ? strtof(row[18], nullptr) : -1;
+			e.max_expansion          = row[19] ? strtof(row[19], nullptr) : -1;
+			e.raid_target_spawnpoint = row[20] ? static_cast<uint8_t>(strtoul(row[20], nullptr, 10)) : 0;
+			e.content_flags          = row[21] ? row[21] : "";
+			e.content_flags_disabled = row[22] ? row[22] : "";
+
 			return e;
 		}
 
@@ -278,9 +278,9 @@ public:
 		v.push_back(columns[17] + " = " + std::to_string(e.force_z));
 		v.push_back(columns[18] + " = " + std::to_string(e.min_expansion));
 		v.push_back(columns[19] + " = " + std::to_string(e.max_expansion));
-		v.push_back(columns[20] + " = '" + Strings::Escape(e.content_flags) + "'");
-		v.push_back(columns[21] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
-		v.push_back(columns[22] + " = " + std::to_string(e.raid_target_spawnpoint));
+		v.push_back(columns[20] + " = " + std::to_string(e.raid_target_spawnpoint));
+		v.push_back(columns[21] + " = '" + Strings::Escape(e.content_flags) + "'");
+		v.push_back(columns[22] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -322,10 +322,10 @@ public:
 		v.push_back(std::to_string(e.force_z));
 		v.push_back(std::to_string(e.min_expansion));
 		v.push_back(std::to_string(e.max_expansion));
+		v.push_back(std::to_string(e.raid_target_spawnpoint));
 		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
 		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
-		v.push_back(std::to_string(e.raid_target_spawnpoint));
-		
+
 		auto results = db.QueryDatabase(
 			fmt::format(
 				"{} VALUES ({})",
@@ -374,10 +374,10 @@ public:
 			v.push_back(std::to_string(e.force_z));
 			v.push_back(std::to_string(e.min_expansion));
 			v.push_back(std::to_string(e.max_expansion));
+			v.push_back(std::to_string(e.raid_target_spawnpoint));
 			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
 			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
-			v.push_back(std::to_string(e.raid_target_spawnpoint));
-			
+
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}
 
@@ -428,12 +428,12 @@ public:
 			e.clear_timer_onboot     = row[15] ? static_cast<int8_t>(atoi(row[15])) : 0;
 			e.boot_variance          = row[16] ? static_cast<int32_t>(atoi(row[16])) : 0;
 			e.force_z                = row[17] ? static_cast<int8_t>(atoi(row[17])) : 0;
-			e.min_expansion          = row[18] ? static_cast<int8_t>(atoi(row[18])) : -1;
-			e.max_expansion          = row[19] ? static_cast<int8_t>(atoi(row[19])) : -1;
-			e.content_flags          = row[20] ? row[20] : "";
-			e.content_flags_disabled = row[21] ? row[21] : "";
-			e.raid_target_spawnpoint = row[22] ? static_cast<int8_t>(atoi(row[22])) : 0;
-			
+			e.min_expansion          = row[18] ? strtof(row[18], nullptr) : -1;
+			e.max_expansion          = row[19] ? strtof(row[19], nullptr) : -1;
+			e.raid_target_spawnpoint = row[20] ? static_cast<uint8_t>(strtoul(row[20], nullptr, 10)) : 0;
+			e.content_flags          = row[21] ? row[21] : "";
+			e.content_flags_disabled = row[22] ? row[22] : "";
+
 			all_entries.push_back(e);
 		}
 
@@ -475,11 +475,11 @@ public:
 			e.clear_timer_onboot     = row[15] ? static_cast<int8_t>(atoi(row[15])) : 0;
 			e.boot_variance          = row[16] ? static_cast<int32_t>(atoi(row[16])) : 0;
 			e.force_z                = row[17] ? static_cast<int8_t>(atoi(row[17])) : 0;
-			e.min_expansion          = row[18] ? static_cast<int8_t>(atoi(row[18])) : -1;
-			e.max_expansion          = row[19] ? static_cast<int8_t>(atoi(row[19])) : -1;
-			e.content_flags          = row[20] ? row[20] : "";
-			e.content_flags_disabled = row[21] ? row[21] : "";
-			e.raid_target_spawnpoint = row[22] ? static_cast<int8_t>(atoi(row[22])) : 0;
+			e.min_expansion          = row[18] ? strtof(row[18], nullptr) : -1;
+			e.max_expansion          = row[19] ? strtof(row[19], nullptr) : -1;
+			e.raid_target_spawnpoint = row[20] ? static_cast<uint8_t>(strtoul(row[20], nullptr, 10)) : 0;
+			e.content_flags          = row[21] ? row[21] : "";
+			e.content_flags_disabled = row[22] ? row[22] : "";
 
 			all_entries.push_back(e);
 		}
@@ -538,106 +538,6 @@ public:
 		return (results.Success() && results.begin()[0] ? strtoll(results.begin()[0], nullptr, 10) : 0);
 	}
 
-	static std::string BaseReplace()
-	{
-		return fmt::format(
-			"REPLACE INTO {} ({}) ",
-			TableName(),
-			ColumnsRaw()
-		);
-	}
-
-	static int ReplaceOne(
-		Database& db,
-		const Spawn2 &e
-	)
-	{
-		std::vector<std::string> v;
-
-		v.push_back(std::to_string(e.id));
-		v.push_back(std::to_string(e.spawngroupID));
-		v.push_back("'" + Strings::Escape(e.zone) + "'");
-		v.push_back(std::to_string(e.x));
-		v.push_back(std::to_string(e.y));
-		v.push_back(std::to_string(e.z));
-		v.push_back(std::to_string(e.heading));
-		v.push_back(std::to_string(e.respawntime));
-		v.push_back(std::to_string(e.variance));
-		v.push_back(std::to_string(e.pathgrid));
-		v.push_back(std::to_string(e._condition));
-		v.push_back(std::to_string(e.cond_value));
-		v.push_back(std::to_string(e.enabled));
-		v.push_back(std::to_string(e.animation));
-		v.push_back(std::to_string(e.boot_respawntime));
-		v.push_back(std::to_string(e.clear_timer_onboot));
-		v.push_back(std::to_string(e.boot_variance));
-		v.push_back(std::to_string(e.force_z));
-		v.push_back(std::to_string(e.min_expansion));
-		v.push_back(std::to_string(e.max_expansion));
-		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
-		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
-		v.push_back(std::to_string(e.raid_target_spawnpoint));
-
-		auto results = db.QueryDatabase(
-			fmt::format(
-				"{} VALUES ({})",
-				BaseReplace(),
-				Strings::Implode(",", v)
-			)
-		);
-
-		return (results.Success() ? results.RowsAffected() : 0);
-	}
-
-	static int ReplaceMany(
-		Database& db,
-		const std::vector<Spawn2> &entries
-	)
-	{
-		std::vector<std::string> insert_chunks;
-
-		for (auto &e: entries) {
-			std::vector<std::string> v;
-
-			v.push_back(std::to_string(e.id));
-			v.push_back(std::to_string(e.spawngroupID));
-			v.push_back("'" + Strings::Escape(e.zone) + "'");
-			v.push_back(std::to_string(e.x));
-			v.push_back(std::to_string(e.y));
-			v.push_back(std::to_string(e.z));
-			v.push_back(std::to_string(e.heading));
-			v.push_back(std::to_string(e.respawntime));
-			v.push_back(std::to_string(e.variance));
-			v.push_back(std::to_string(e.pathgrid));
-			v.push_back(std::to_string(e._condition));
-			v.push_back(std::to_string(e.cond_value));
-			v.push_back(std::to_string(e.enabled));
-			v.push_back(std::to_string(e.animation));
-			v.push_back(std::to_string(e.boot_respawntime));
-			v.push_back(std::to_string(e.clear_timer_onboot));
-			v.push_back(std::to_string(e.boot_variance));
-			v.push_back(std::to_string(e.force_z));
-			v.push_back(std::to_string(e.min_expansion));
-			v.push_back(std::to_string(e.max_expansion));
-			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
-			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
-			v.push_back(std::to_string(e.raid_target_spawnpoint));
-
-			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
-		}
-
-		std::vector<std::string> v;
-
-		auto results = db.QueryDatabase(
-			fmt::format(
-				"{} VALUES {}",
-				BaseReplace(),
-				Strings::Implode(",", insert_chunks)
-			)
-		);
-
-		return (results.Success() ? results.RowsAffected() : 0);
-	}
 };
 
 #endif //EQEMU_BASE_SPAWN2_REPOSITORY_H

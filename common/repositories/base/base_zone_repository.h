@@ -6,7 +6,7 @@
  * Any modifications to base repositories are to be made by the generator only
  *
  * @generator ./utils/scripts/generators/repository-generator.pl
- * @docs https://docs.eqemu.io/developer/repositories
+ * @docs https://eqemu.gitbook.io/server/in-development/developer-area/repositories
  */
 
 #ifndef EQEMU_BASE_ZONE_REPOSITORY_H
@@ -107,8 +107,15 @@ public:
 		uint16_t    pull_limit;
 		int32_t     graveyard_time;
 		float       max_z;
-		int8_t      min_expansion;
-		int8_t      max_expansion;
+		uint8_t     reducedspawntimers;
+		uint8_t     trivial_loot_code;
+		int32_t     banish_zone_id;
+		float       banish_x;
+		float       banish_y;
+		float       banish_z;
+		float       banish_heading;
+		float       min_expansion;
+		float       max_expansion;
 		std::string content_flags;
 		std::string content_flags_disabled;
 	};
@@ -209,6 +216,13 @@ public:
 			"pull_limit",
 			"graveyard_time",
 			"max_z",
+			"reducedspawntimers",
+			"trivial_loot_code",
+			"banish_zone_id",
+			"banish_x",
+			"banish_y",
+			"banish_z",
+			"banish_heading",
 			"min_expansion",
 			"max_expansion",
 			"content_flags",
@@ -307,6 +321,13 @@ public:
 			"pull_limit",
 			"graveyard_time",
 			"max_z",
+			"reducedspawntimers",
+			"trivial_loot_code",
+			"banish_zone_id",
+			"banish_x",
+			"banish_y",
+			"banish_z",
+			"banish_heading",
 			"min_expansion",
 			"max_expansion",
 			"content_flags",
@@ -379,7 +400,7 @@ public:
 		e.sky                    = 1;
 		e.ztype                  = 1;
 		e.zone_exp_multiplier    = 0.00;
-		e.gravity                = 0.4;
+		e.gravity                = 0;
 		e.time_type              = 2;
 		e.fog_red1               = 0;
 		e.fog_green1             = 0;
@@ -439,6 +460,13 @@ public:
 		e.pull_limit             = 80;
 		e.graveyard_time         = 1;
 		e.max_z                  = 10000;
+		e.reducedspawntimers     = 0;
+		e.trivial_loot_code      = 0;
+		e.banish_zone_id         = 0;
+		e.banish_x               = 0;
+		e.banish_y               = 0;
+		e.banish_z               = 0;
+		e.banish_heading         = 0;
 		e.min_expansion          = -1;
 		e.max_expansion          = -1;
 		e.content_flags          = "";
@@ -507,7 +535,7 @@ public:
 			e.sky                    = row[25] ? static_cast<uint8_t>(strtoul(row[25], nullptr, 10)) : 1;
 			e.ztype                  = row[26] ? static_cast<uint8_t>(strtoul(row[26], nullptr, 10)) : 1;
 			e.zone_exp_multiplier    = row[27] ? strtof(row[27], nullptr) : 0.00;
-			e.gravity                = row[28] ? strtof(row[28], nullptr) : 0.4;
+			e.gravity                = row[28] ? strtof(row[28], nullptr) : 0;
 			e.time_type              = row[29] ? static_cast<uint8_t>(strtoul(row[29], nullptr, 10)) : 2;
 			e.fog_red1               = row[30] ? static_cast<uint8_t>(strtoul(row[30], nullptr, 10)) : 0;
 			e.fog_green1             = row[31] ? static_cast<uint8_t>(strtoul(row[31], nullptr, 10)) : 0;
@@ -567,10 +595,17 @@ public:
 			e.pull_limit             = row[85] ? static_cast<uint16_t>(strtoul(row[85], nullptr, 10)) : 80;
 			e.graveyard_time         = row[86] ? static_cast<int32_t>(atoi(row[86])) : 1;
 			e.max_z                  = row[87] ? strtof(row[87], nullptr) : 10000;
-			e.min_expansion          = row[88] ? static_cast<int8_t>(atoi(row[88])) : -1;
-			e.max_expansion          = row[89] ? static_cast<int8_t>(atoi(row[89])) : -1;
-			e.content_flags          = row[90] ? row[90] : "";
-			e.content_flags_disabled = row[91] ? row[91] : "";
+			e.reducedspawntimers     = row[88] ? static_cast<uint8_t>(strtoul(row[88], nullptr, 10)) : 0;
+			e.trivial_loot_code      = row[89] ? static_cast<uint8_t>(strtoul(row[89], nullptr, 10)) : 0;
+			e.banish_zone_id         = row[90] ? static_cast<int32_t>(atoi(row[90])) : 0;
+			e.banish_x               = row[91] ? strtof(row[91], nullptr) : 0;
+			e.banish_y               = row[92] ? strtof(row[92], nullptr) : 0;
+			e.banish_z               = row[93] ? strtof(row[93], nullptr) : 0;
+			e.banish_heading         = row[94] ? strtof(row[94], nullptr) : 0;
+			e.min_expansion          = row[95] ? strtof(row[95], nullptr) : -1;
+			e.max_expansion          = row[96] ? strtof(row[96], nullptr) : -1;
+			e.content_flags          = row[97] ? row[97] : "";
+			e.content_flags_disabled = row[98] ? row[98] : "";
 
 			return e;
 		}
@@ -691,10 +726,17 @@ public:
 		v.push_back(columns[85] + " = " + std::to_string(e.pull_limit));
 		v.push_back(columns[86] + " = " + std::to_string(e.graveyard_time));
 		v.push_back(columns[87] + " = " + std::to_string(e.max_z));
-		v.push_back(columns[88] + " = " + std::to_string(e.min_expansion));
-		v.push_back(columns[89] + " = " + std::to_string(e.max_expansion));
-		v.push_back(columns[90] + " = '" + Strings::Escape(e.content_flags) + "'");
-		v.push_back(columns[91] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
+		v.push_back(columns[88] + " = " + std::to_string(e.reducedspawntimers));
+		v.push_back(columns[89] + " = " + std::to_string(e.trivial_loot_code));
+		v.push_back(columns[90] + " = " + std::to_string(e.banish_zone_id));
+		v.push_back(columns[91] + " = " + std::to_string(e.banish_x));
+		v.push_back(columns[92] + " = " + std::to_string(e.banish_y));
+		v.push_back(columns[93] + " = " + std::to_string(e.banish_z));
+		v.push_back(columns[94] + " = " + std::to_string(e.banish_heading));
+		v.push_back(columns[95] + " = " + std::to_string(e.min_expansion));
+		v.push_back(columns[96] + " = " + std::to_string(e.max_expansion));
+		v.push_back(columns[97] + " = '" + Strings::Escape(e.content_flags) + "'");
+		v.push_back(columns[98] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -804,6 +846,13 @@ public:
 		v.push_back(std::to_string(e.pull_limit));
 		v.push_back(std::to_string(e.graveyard_time));
 		v.push_back(std::to_string(e.max_z));
+		v.push_back(std::to_string(e.reducedspawntimers));
+		v.push_back(std::to_string(e.trivial_loot_code));
+		v.push_back(std::to_string(e.banish_zone_id));
+		v.push_back(std::to_string(e.banish_x));
+		v.push_back(std::to_string(e.banish_y));
+		v.push_back(std::to_string(e.banish_z));
+		v.push_back(std::to_string(e.banish_heading));
 		v.push_back(std::to_string(e.min_expansion));
 		v.push_back(std::to_string(e.max_expansion));
 		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
@@ -925,6 +974,13 @@ public:
 			v.push_back(std::to_string(e.pull_limit));
 			v.push_back(std::to_string(e.graveyard_time));
 			v.push_back(std::to_string(e.max_z));
+			v.push_back(std::to_string(e.reducedspawntimers));
+			v.push_back(std::to_string(e.trivial_loot_code));
+			v.push_back(std::to_string(e.banish_zone_id));
+			v.push_back(std::to_string(e.banish_x));
+			v.push_back(std::to_string(e.banish_y));
+			v.push_back(std::to_string(e.banish_z));
+			v.push_back(std::to_string(e.banish_heading));
 			v.push_back(std::to_string(e.min_expansion));
 			v.push_back(std::to_string(e.max_expansion));
 			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
@@ -990,7 +1046,7 @@ public:
 			e.sky                    = row[25] ? static_cast<uint8_t>(strtoul(row[25], nullptr, 10)) : 1;
 			e.ztype                  = row[26] ? static_cast<uint8_t>(strtoul(row[26], nullptr, 10)) : 1;
 			e.zone_exp_multiplier    = row[27] ? strtof(row[27], nullptr) : 0.00;
-			e.gravity                = row[28] ? strtof(row[28], nullptr) : 0.4;
+			e.gravity                = row[28] ? strtof(row[28], nullptr) : 0;
 			e.time_type              = row[29] ? static_cast<uint8_t>(strtoul(row[29], nullptr, 10)) : 2;
 			e.fog_red1               = row[30] ? static_cast<uint8_t>(strtoul(row[30], nullptr, 10)) : 0;
 			e.fog_green1             = row[31] ? static_cast<uint8_t>(strtoul(row[31], nullptr, 10)) : 0;
@@ -1050,10 +1106,17 @@ public:
 			e.pull_limit             = row[85] ? static_cast<uint16_t>(strtoul(row[85], nullptr, 10)) : 80;
 			e.graveyard_time         = row[86] ? static_cast<int32_t>(atoi(row[86])) : 1;
 			e.max_z                  = row[87] ? strtof(row[87], nullptr) : 10000;
-			e.min_expansion          = row[88] ? static_cast<int8_t>(atoi(row[88])) : -1;
-			e.max_expansion          = row[89] ? static_cast<int8_t>(atoi(row[89])) : -1;
-			e.content_flags          = row[90] ? row[90] : "";
-			e.content_flags_disabled = row[91] ? row[91] : "";
+			e.reducedspawntimers     = row[88] ? static_cast<uint8_t>(strtoul(row[88], nullptr, 10)) : 0;
+			e.trivial_loot_code      = row[89] ? static_cast<uint8_t>(strtoul(row[89], nullptr, 10)) : 0;
+			e.banish_zone_id         = row[90] ? static_cast<int32_t>(atoi(row[90])) : 0;
+			e.banish_x               = row[91] ? strtof(row[91], nullptr) : 0;
+			e.banish_y               = row[92] ? strtof(row[92], nullptr) : 0;
+			e.banish_z               = row[93] ? strtof(row[93], nullptr) : 0;
+			e.banish_heading         = row[94] ? strtof(row[94], nullptr) : 0;
+			e.min_expansion          = row[95] ? strtof(row[95], nullptr) : -1;
+			e.max_expansion          = row[96] ? strtof(row[96], nullptr) : -1;
+			e.content_flags          = row[97] ? row[97] : "";
+			e.content_flags_disabled = row[98] ? row[98] : "";
 
 			all_entries.push_back(e);
 		}
@@ -1106,7 +1169,7 @@ public:
 			e.sky                    = row[25] ? static_cast<uint8_t>(strtoul(row[25], nullptr, 10)) : 1;
 			e.ztype                  = row[26] ? static_cast<uint8_t>(strtoul(row[26], nullptr, 10)) : 1;
 			e.zone_exp_multiplier    = row[27] ? strtof(row[27], nullptr) : 0.00;
-			e.gravity                = row[28] ? strtof(row[28], nullptr) : 0.4;
+			e.gravity                = row[28] ? strtof(row[28], nullptr) : 0;
 			e.time_type              = row[29] ? static_cast<uint8_t>(strtoul(row[29], nullptr, 10)) : 2;
 			e.fog_red1               = row[30] ? static_cast<uint8_t>(strtoul(row[30], nullptr, 10)) : 0;
 			e.fog_green1             = row[31] ? static_cast<uint8_t>(strtoul(row[31], nullptr, 10)) : 0;
@@ -1166,10 +1229,17 @@ public:
 			e.pull_limit             = row[85] ? static_cast<uint16_t>(strtoul(row[85], nullptr, 10)) : 80;
 			e.graveyard_time         = row[86] ? static_cast<int32_t>(atoi(row[86])) : 1;
 			e.max_z                  = row[87] ? strtof(row[87], nullptr) : 10000;
-			e.min_expansion          = row[88] ? static_cast<int8_t>(atoi(row[88])) : -1;
-			e.max_expansion          = row[89] ? static_cast<int8_t>(atoi(row[89])) : -1;
-			e.content_flags          = row[90] ? row[90] : "";
-			e.content_flags_disabled = row[91] ? row[91] : "";
+			e.reducedspawntimers     = row[88] ? static_cast<uint8_t>(strtoul(row[88], nullptr, 10)) : 0;
+			e.trivial_loot_code      = row[89] ? static_cast<uint8_t>(strtoul(row[89], nullptr, 10)) : 0;
+			e.banish_zone_id         = row[90] ? static_cast<int32_t>(atoi(row[90])) : 0;
+			e.banish_x               = row[91] ? strtof(row[91], nullptr) : 0;
+			e.banish_y               = row[92] ? strtof(row[92], nullptr) : 0;
+			e.banish_z               = row[93] ? strtof(row[93], nullptr) : 0;
+			e.banish_heading         = row[94] ? strtof(row[94], nullptr) : 0;
+			e.min_expansion          = row[95] ? strtof(row[95], nullptr) : -1;
+			e.max_expansion          = row[96] ? strtof(row[96], nullptr) : -1;
+			e.content_flags          = row[97] ? row[97] : "";
+			e.content_flags_disabled = row[98] ? row[98] : "";
 
 			all_entries.push_back(e);
 		}
@@ -1228,244 +1298,6 @@ public:
 		return (results.Success() && results.begin()[0] ? strtoll(results.begin()[0], nullptr, 10) : 0);
 	}
 
-	static std::string BaseReplace()
-	{
-		return fmt::format(
-			"REPLACE INTO {} ({}) ",
-			TableName(),
-			ColumnsRaw()
-		);
-	}
-
-	static int ReplaceOne(
-		Database& db,
-		const Zone &e
-	)
-	{
-		std::vector<std::string> v;
-
-		v.push_back("'" + Strings::Escape(e.short_name) + "'");
-		v.push_back(std::to_string(e.id));
-		v.push_back("'" + Strings::Escape(e.file_name) + "'");
-		v.push_back("'" + Strings::Escape(e.long_name) + "'");
-		v.push_back("'" + Strings::Escape(e.map_file_name) + "'");
-		v.push_back(std::to_string(e.safe_x));
-		v.push_back(std::to_string(e.safe_y));
-		v.push_back(std::to_string(e.safe_z));
-		v.push_back(std::to_string(e.safe_heading));
-		v.push_back(std::to_string(e.graveyard_id));
-		v.push_back(std::to_string(e.min_level));
-		v.push_back(std::to_string(e.min_status));
-		v.push_back(std::to_string(e.zoneidnumber));
-		v.push_back(std::to_string(e.timezone));
-		v.push_back(std::to_string(e.maxclients));
-		v.push_back(std::to_string(e.ruleset));
-		v.push_back("'" + Strings::Escape(e.note) + "'");
-		v.push_back(std::to_string(e.underworld));
-		v.push_back(std::to_string(e.minclip));
-		v.push_back(std::to_string(e.maxclip));
-		v.push_back(std::to_string(e.fog_minclip));
-		v.push_back(std::to_string(e.fog_maxclip));
-		v.push_back(std::to_string(e.fog_blue));
-		v.push_back(std::to_string(e.fog_red));
-		v.push_back(std::to_string(e.fog_green));
-		v.push_back(std::to_string(e.sky));
-		v.push_back(std::to_string(e.ztype));
-		v.push_back(std::to_string(e.zone_exp_multiplier));
-		v.push_back(std::to_string(e.gravity));
-		v.push_back(std::to_string(e.time_type));
-		v.push_back(std::to_string(e.fog_red1));
-		v.push_back(std::to_string(e.fog_green1));
-		v.push_back(std::to_string(e.fog_blue1));
-		v.push_back(std::to_string(e.fog_minclip1));
-		v.push_back(std::to_string(e.fog_maxclip1));
-		v.push_back(std::to_string(e.fog_red2));
-		v.push_back(std::to_string(e.fog_green2));
-		v.push_back(std::to_string(e.fog_blue2));
-		v.push_back(std::to_string(e.fog_minclip2));
-		v.push_back(std::to_string(e.fog_maxclip2));
-		v.push_back(std::to_string(e.fog_red3));
-		v.push_back(std::to_string(e.fog_green3));
-		v.push_back(std::to_string(e.fog_blue3));
-		v.push_back(std::to_string(e.fog_minclip3));
-		v.push_back(std::to_string(e.fog_maxclip3));
-		v.push_back(std::to_string(e.fog_red4));
-		v.push_back(std::to_string(e.fog_green4));
-		v.push_back(std::to_string(e.fog_blue4));
-		v.push_back(std::to_string(e.fog_minclip4));
-		v.push_back(std::to_string(e.fog_maxclip4));
-		v.push_back(std::to_string(e.fog_density));
-		v.push_back("'" + Strings::Escape(e.flag_needed) + "'");
-		v.push_back(std::to_string(e.canbind));
-		v.push_back(std::to_string(e.cancombat));
-		v.push_back(std::to_string(e.canlevitate));
-		v.push_back(std::to_string(e.castoutdoor));
-		v.push_back(std::to_string(e.hotzone));
-		v.push_back(std::to_string(e.shutdowndelay));
-		v.push_back(std::to_string(e.peqzone));
-		v.push_back(std::to_string(e.expansion));
-		v.push_back(std::to_string(e.suspendbuffs));
-		v.push_back(std::to_string(e.rain_chance1));
-		v.push_back(std::to_string(e.rain_chance2));
-		v.push_back(std::to_string(e.rain_chance3));
-		v.push_back(std::to_string(e.rain_chance4));
-		v.push_back(std::to_string(e.rain_duration1));
-		v.push_back(std::to_string(e.rain_duration2));
-		v.push_back(std::to_string(e.rain_duration3));
-		v.push_back(std::to_string(e.rain_duration4));
-		v.push_back(std::to_string(e.snow_chance1));
-		v.push_back(std::to_string(e.snow_chance2));
-		v.push_back(std::to_string(e.snow_chance3));
-		v.push_back(std::to_string(e.snow_chance4));
-		v.push_back(std::to_string(e.snow_duration1));
-		v.push_back(std::to_string(e.snow_duration2));
-		v.push_back(std::to_string(e.snow_duration3));
-		v.push_back(std::to_string(e.snow_duration4));
-		v.push_back(std::to_string(e.type));
-		v.push_back(std::to_string(e.skylock));
-		v.push_back(std::to_string(e.skip_los));
-		v.push_back(std::to_string(e.music));
-		v.push_back(std::to_string(e.random_loc));
-		v.push_back(std::to_string(e.dragaggro));
-		v.push_back(std::to_string(e.never_idle));
-		v.push_back(std::to_string(e.castdungeon));
-		v.push_back(std::to_string(e.pull_limit));
-		v.push_back(std::to_string(e.graveyard_time));
-		v.push_back(std::to_string(e.max_z));
-		v.push_back(std::to_string(e.min_expansion));
-		v.push_back(std::to_string(e.max_expansion));
-		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
-		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
-
-		auto results = db.QueryDatabase(
-			fmt::format(
-				"{} VALUES ({})",
-				BaseReplace(),
-				Strings::Implode(",", v)
-			)
-		);
-
-		return (results.Success() ? results.RowsAffected() : 0);
-	}
-
-	static int ReplaceMany(
-		Database& db,
-		const std::vector<Zone> &entries
-	)
-	{
-		std::vector<std::string> insert_chunks;
-
-		for (auto &e: entries) {
-			std::vector<std::string> v;
-
-			v.push_back("'" + Strings::Escape(e.short_name) + "'");
-			v.push_back(std::to_string(e.id));
-			v.push_back("'" + Strings::Escape(e.file_name) + "'");
-			v.push_back("'" + Strings::Escape(e.long_name) + "'");
-			v.push_back("'" + Strings::Escape(e.map_file_name) + "'");
-			v.push_back(std::to_string(e.safe_x));
-			v.push_back(std::to_string(e.safe_y));
-			v.push_back(std::to_string(e.safe_z));
-			v.push_back(std::to_string(e.safe_heading));
-			v.push_back(std::to_string(e.graveyard_id));
-			v.push_back(std::to_string(e.min_level));
-			v.push_back(std::to_string(e.min_status));
-			v.push_back(std::to_string(e.zoneidnumber));
-			v.push_back(std::to_string(e.timezone));
-			v.push_back(std::to_string(e.maxclients));
-			v.push_back(std::to_string(e.ruleset));
-			v.push_back("'" + Strings::Escape(e.note) + "'");
-			v.push_back(std::to_string(e.underworld));
-			v.push_back(std::to_string(e.minclip));
-			v.push_back(std::to_string(e.maxclip));
-			v.push_back(std::to_string(e.fog_minclip));
-			v.push_back(std::to_string(e.fog_maxclip));
-			v.push_back(std::to_string(e.fog_blue));
-			v.push_back(std::to_string(e.fog_red));
-			v.push_back(std::to_string(e.fog_green));
-			v.push_back(std::to_string(e.sky));
-			v.push_back(std::to_string(e.ztype));
-			v.push_back(std::to_string(e.zone_exp_multiplier));
-			v.push_back(std::to_string(e.gravity));
-			v.push_back(std::to_string(e.time_type));
-			v.push_back(std::to_string(e.fog_red1));
-			v.push_back(std::to_string(e.fog_green1));
-			v.push_back(std::to_string(e.fog_blue1));
-			v.push_back(std::to_string(e.fog_minclip1));
-			v.push_back(std::to_string(e.fog_maxclip1));
-			v.push_back(std::to_string(e.fog_red2));
-			v.push_back(std::to_string(e.fog_green2));
-			v.push_back(std::to_string(e.fog_blue2));
-			v.push_back(std::to_string(e.fog_minclip2));
-			v.push_back(std::to_string(e.fog_maxclip2));
-			v.push_back(std::to_string(e.fog_red3));
-			v.push_back(std::to_string(e.fog_green3));
-			v.push_back(std::to_string(e.fog_blue3));
-			v.push_back(std::to_string(e.fog_minclip3));
-			v.push_back(std::to_string(e.fog_maxclip3));
-			v.push_back(std::to_string(e.fog_red4));
-			v.push_back(std::to_string(e.fog_green4));
-			v.push_back(std::to_string(e.fog_blue4));
-			v.push_back(std::to_string(e.fog_minclip4));
-			v.push_back(std::to_string(e.fog_maxclip4));
-			v.push_back(std::to_string(e.fog_density));
-			v.push_back("'" + Strings::Escape(e.flag_needed) + "'");
-			v.push_back(std::to_string(e.canbind));
-			v.push_back(std::to_string(e.cancombat));
-			v.push_back(std::to_string(e.canlevitate));
-			v.push_back(std::to_string(e.castoutdoor));
-			v.push_back(std::to_string(e.hotzone));
-			v.push_back(std::to_string(e.shutdowndelay));
-			v.push_back(std::to_string(e.peqzone));
-			v.push_back(std::to_string(e.expansion));
-			v.push_back(std::to_string(e.suspendbuffs));
-			v.push_back(std::to_string(e.rain_chance1));
-			v.push_back(std::to_string(e.rain_chance2));
-			v.push_back(std::to_string(e.rain_chance3));
-			v.push_back(std::to_string(e.rain_chance4));
-			v.push_back(std::to_string(e.rain_duration1));
-			v.push_back(std::to_string(e.rain_duration2));
-			v.push_back(std::to_string(e.rain_duration3));
-			v.push_back(std::to_string(e.rain_duration4));
-			v.push_back(std::to_string(e.snow_chance1));
-			v.push_back(std::to_string(e.snow_chance2));
-			v.push_back(std::to_string(e.snow_chance3));
-			v.push_back(std::to_string(e.snow_chance4));
-			v.push_back(std::to_string(e.snow_duration1));
-			v.push_back(std::to_string(e.snow_duration2));
-			v.push_back(std::to_string(e.snow_duration3));
-			v.push_back(std::to_string(e.snow_duration4));
-			v.push_back(std::to_string(e.type));
-			v.push_back(std::to_string(e.skylock));
-			v.push_back(std::to_string(e.skip_los));
-			v.push_back(std::to_string(e.music));
-			v.push_back(std::to_string(e.random_loc));
-			v.push_back(std::to_string(e.dragaggro));
-			v.push_back(std::to_string(e.never_idle));
-			v.push_back(std::to_string(e.castdungeon));
-			v.push_back(std::to_string(e.pull_limit));
-			v.push_back(std::to_string(e.graveyard_time));
-			v.push_back(std::to_string(e.max_z));
-			v.push_back(std::to_string(e.min_expansion));
-			v.push_back(std::to_string(e.max_expansion));
-			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
-			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
-
-			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
-		}
-
-		std::vector<std::string> v;
-
-		auto results = db.QueryDatabase(
-			fmt::format(
-				"{} VALUES {}",
-				BaseReplace(),
-				Strings::Implode(",", insert_chunks)
-			)
-		);
-
-		return (results.Success() ? results.RowsAffected() : 0);
-	}
 };
 
 #endif //EQEMU_BASE_ZONE_REPOSITORY_H

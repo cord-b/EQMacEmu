@@ -6,7 +6,7 @@
  * Any modifications to base repositories are to be made by the generator only
  *
  * @generator ./utils/scripts/generators/repository-generator.pl
- * @docs https://docs.eqemu.io/developer/repositories
+ * @docs https://eqemu.gitbook.io/server/in-development/developer-area/repositories
  */
 
 #ifndef EQEMU_BASE_STARTING_ITEMS_REPOSITORY_H
@@ -28,10 +28,10 @@ public:
 		uint8_t     item_charges;
 		int8_t      gm;
 		int32_t     slot;
-		int8_t      min_expansion;
-		int8_t      max_expansion;
 		std::string content_flags;
 		std::string content_flags_disabled;
+		float       min_expansion;
+		float       max_expansion;
 	};
 
 	static std::string PrimaryKey()
@@ -51,10 +51,10 @@ public:
 			"item_charges",
 			"gm",
 			"slot",
-			"min_expansion",
-			"max_expansion",
 			"content_flags",
 			"content_flags_disabled",
+			"min_expansion",
+			"max_expansion",
 		};
 	}
 
@@ -70,10 +70,10 @@ public:
 			"item_charges",
 			"gm",
 			"slot",
-			"min_expansion",
-			"max_expansion",
 			"content_flags",
 			"content_flags_disabled",
+			"min_expansion",
+			"max_expansion",
 		};
 	}
 
@@ -123,10 +123,10 @@ public:
 		e.item_charges           = 1;
 		e.gm                     = 0;
 		e.slot                   = -1;
-		e.min_expansion          = -1;
-		e.max_expansion          = -1;
 		e.content_flags          = "";
 		e.content_flags_disabled = "";
+		e.min_expansion          = -1;
+		e.max_expansion          = -1;
 
 		return e;
 	}
@@ -172,10 +172,10 @@ public:
 			e.item_charges           = row[6] ? static_cast<uint8_t>(strtoul(row[6], nullptr, 10)) : 1;
 			e.gm                     = row[7] ? static_cast<int8_t>(atoi(row[7])) : 0;
 			e.slot                   = row[8] ? static_cast<int32_t>(atoi(row[8])) : -1;
-			e.min_expansion          = row[9] ? static_cast<int8_t>(atoi(row[9])) : -1;
-			e.max_expansion          = row[10] ? static_cast<int8_t>(atoi(row[10])) : -1;
-			e.content_flags          = row[11] ? row[11] : "";
-			e.content_flags_disabled = row[12] ? row[12] : "";
+			e.content_flags          = row[9] ? row[9] : "";
+			e.content_flags_disabled = row[10] ? row[10] : "";
+			e.min_expansion          = row[11] ? strtof(row[11], nullptr) : -1;
+			e.max_expansion          = row[12] ? strtof(row[12], nullptr) : -1;
 
 			return e;
 		}
@@ -217,10 +217,10 @@ public:
 		v.push_back(columns[6] + " = " + std::to_string(e.item_charges));
 		v.push_back(columns[7] + " = " + std::to_string(e.gm));
 		v.push_back(columns[8] + " = " + std::to_string(e.slot));
-		v.push_back(columns[9] + " = " + std::to_string(e.min_expansion));
-		v.push_back(columns[10] + " = " + std::to_string(e.max_expansion));
-		v.push_back(columns[11] + " = '" + Strings::Escape(e.content_flags) + "'");
-		v.push_back(columns[12] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
+		v.push_back(columns[9] + " = '" + Strings::Escape(e.content_flags) + "'");
+		v.push_back(columns[10] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
+		v.push_back(columns[11] + " = " + std::to_string(e.min_expansion));
+		v.push_back(columns[12] + " = " + std::to_string(e.max_expansion));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -251,10 +251,10 @@ public:
 		v.push_back(std::to_string(e.item_charges));
 		v.push_back(std::to_string(e.gm));
 		v.push_back(std::to_string(e.slot));
-		v.push_back(std::to_string(e.min_expansion));
-		v.push_back(std::to_string(e.max_expansion));
 		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
 		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
+		v.push_back(std::to_string(e.min_expansion));
+		v.push_back(std::to_string(e.max_expansion));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -293,10 +293,10 @@ public:
 			v.push_back(std::to_string(e.item_charges));
 			v.push_back(std::to_string(e.gm));
 			v.push_back(std::to_string(e.slot));
-			v.push_back(std::to_string(e.min_expansion));
-			v.push_back(std::to_string(e.max_expansion));
 			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
 			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
+			v.push_back(std::to_string(e.min_expansion));
+			v.push_back(std::to_string(e.max_expansion));
 
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}
@@ -339,10 +339,10 @@ public:
 			e.item_charges           = row[6] ? static_cast<uint8_t>(strtoul(row[6], nullptr, 10)) : 1;
 			e.gm                     = row[7] ? static_cast<int8_t>(atoi(row[7])) : 0;
 			e.slot                   = row[8] ? static_cast<int32_t>(atoi(row[8])) : -1;
-			e.min_expansion          = row[9] ? static_cast<int8_t>(atoi(row[9])) : -1;
-			e.max_expansion          = row[10] ? static_cast<int8_t>(atoi(row[10])) : -1;
-			e.content_flags          = row[11] ? row[11] : "";
-			e.content_flags_disabled = row[12] ? row[12] : "";
+			e.content_flags          = row[9] ? row[9] : "";
+			e.content_flags_disabled = row[10] ? row[10] : "";
+			e.min_expansion          = row[11] ? strtof(row[11], nullptr) : -1;
+			e.max_expansion          = row[12] ? strtof(row[12], nullptr) : -1;
 
 			all_entries.push_back(e);
 		}
@@ -376,10 +376,10 @@ public:
 			e.item_charges           = row[6] ? static_cast<uint8_t>(strtoul(row[6], nullptr, 10)) : 1;
 			e.gm                     = row[7] ? static_cast<int8_t>(atoi(row[7])) : 0;
 			e.slot                   = row[8] ? static_cast<int32_t>(atoi(row[8])) : -1;
-			e.min_expansion          = row[9] ? static_cast<int8_t>(atoi(row[9])) : -1;
-			e.max_expansion          = row[10] ? static_cast<int8_t>(atoi(row[10])) : -1;
-			e.content_flags          = row[11] ? row[11] : "";
-			e.content_flags_disabled = row[12] ? row[12] : "";
+			e.content_flags          = row[9] ? row[9] : "";
+			e.content_flags_disabled = row[10] ? row[10] : "";
+			e.min_expansion          = row[11] ? strtof(row[11], nullptr) : -1;
+			e.max_expansion          = row[12] ? strtof(row[12], nullptr) : -1;
 
 			all_entries.push_back(e);
 		}
@@ -438,86 +438,6 @@ public:
 		return (results.Success() && results.begin()[0] ? strtoll(results.begin()[0], nullptr, 10) : 0);
 	}
 
-	static std::string BaseReplace()
-	{
-		return fmt::format(
-			"REPLACE INTO {} ({}) ",
-			TableName(),
-			ColumnsRaw()
-		);
-	}
-
-	static int ReplaceOne(
-		Database& db,
-		const StartingItems &e
-	)
-	{
-		std::vector<std::string> v;
-
-		v.push_back(std::to_string(e.id));
-		v.push_back(std::to_string(e.race));
-		v.push_back(std::to_string(e.class_));
-		v.push_back(std::to_string(e.deityid));
-		v.push_back(std::to_string(e.zoneid));
-		v.push_back(std::to_string(e.itemid));
-		v.push_back(std::to_string(e.item_charges));
-		v.push_back(std::to_string(e.gm));
-		v.push_back(std::to_string(e.slot));
-		v.push_back(std::to_string(e.min_expansion));
-		v.push_back(std::to_string(e.max_expansion));
-		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
-		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
-
-		auto results = db.QueryDatabase(
-			fmt::format(
-				"{} VALUES ({})",
-				BaseReplace(),
-				Strings::Implode(",", v)
-			)
-		);
-
-		return (results.Success() ? results.RowsAffected() : 0);
-	}
-
-	static int ReplaceMany(
-		Database& db,
-		const std::vector<StartingItems> &entries
-	)
-	{
-		std::vector<std::string> insert_chunks;
-
-		for (auto &e: entries) {
-			std::vector<std::string> v;
-
-			v.push_back(std::to_string(e.id));
-			v.push_back(std::to_string(e.race));
-			v.push_back(std::to_string(e.class_));
-			v.push_back(std::to_string(e.deityid));
-			v.push_back(std::to_string(e.zoneid));
-			v.push_back(std::to_string(e.itemid));
-			v.push_back(std::to_string(e.item_charges));
-			v.push_back(std::to_string(e.gm));
-			v.push_back(std::to_string(e.slot));
-			v.push_back(std::to_string(e.min_expansion));
-			v.push_back(std::to_string(e.max_expansion));
-			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
-			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
-
-			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
-		}
-
-		std::vector<std::string> v;
-
-		auto results = db.QueryDatabase(
-			fmt::format(
-				"{} VALUES {}",
-				BaseReplace(),
-				Strings::Implode(",", insert_chunks)
-			)
-		);
-
-		return (results.Success() ? results.RowsAffected() : 0);
-	}
 };
 
 #endif //EQEMU_BASE_STARTING_ITEMS_REPOSITORY_H
