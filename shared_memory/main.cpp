@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	content_service.SetCurrentExpansion(RuleI(Expansion, CurrentExpansion));
+	content_service.SetCurrentExpansion(RuleR(World, CurrentExpansion));
 	content_service.SetDatabase(&database)
 		->SetExpansionContext()
 		->ReloadContentFlags();

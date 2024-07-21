@@ -149,7 +149,7 @@ void ZoneDatabase::AddLootDropToNPC(NPC *npc, uint32 lootdrop_id, ItemList* item
 
 			bool min_expansion_enabled = RuleR(World, CurrentExpansion) >= loot_drop->Entries[i].min_expansion;
 			bool max_expansion_enabled = RuleR(World, CurrentExpansion) < loot_drop->Entries[i].max_expansion;
-			bool expansion_all = loot_drop->Entries[i].min_expansion == 0.0f;
+			bool expansion_all = loot_drop->Entries[i].min_expansion == ExpansionEras::AllEQEras;
 			if (!expansion_all && (!min_expansion_enabled || !max_expansion_enabled))
 				continue;
 
@@ -188,7 +188,7 @@ void ZoneDatabase::AddLootDropToNPC(NPC *npc, uint32 lootdrop_id, ItemList* item
 	for (uint32 i = 0; i < loot_drop->NumEntries; ++i) {
 		bool min_expansion_enabled =  RuleR(World, CurrentExpansion) >= loot_drop->Entries[i].min_expansion;
 		bool max_expansion_enabled = RuleR(World, CurrentExpansion) < loot_drop->Entries[i].max_expansion;
-		bool expansion_all = loot_drop->Entries[i].min_expansion == 0.0f;
+		bool expansion_all = loot_drop->Entries[i].min_expansion == ExpansionEras::AllEQEras;
 		if (!expansion_all && (!min_expansion_enabled || !max_expansion_enabled))
 			continue;
 
@@ -218,7 +218,7 @@ void ZoneDatabase::AddLootDropToNPC(NPC *npc, uint32 lootdrop_id, ItemList* item
 		for(uint32 j = 0; j < loot_drop->NumEntries; ++j) {
 			bool min_expansion_enabled = RuleR(World, CurrentExpansion) >= loot_drop->Entries[j].min_expansion;
 			bool max_expansion_enabled = RuleR(World, CurrentExpansion) < loot_drop->Entries[j].max_expansion;
-			bool expansion_all = loot_drop->Entries[j].min_expansion == 0.0f;
+			bool expansion_all = loot_drop->Entries[j].min_expansion == ExpansionEras::AllEQEras;
 			if (!expansion_all && (!min_expansion_enabled || !max_expansion_enabled))
 				continue;
 
@@ -266,7 +266,7 @@ void ZoneDatabase::AddLootDropToNPC(NPC *npc, uint32 lootdrop_id, ItemList* item
 		{
 			bool min_expansion_enabled = RuleR(World, CurrentExpansion) >= loot_drop->Entries[j].min_expansion;
 			bool max_expansion_enabled = RuleR(World, CurrentExpansion) < loot_drop->Entries[j].max_expansion;
-			bool expansion_all = loot_drop->Entries[j].min_expansion == 0.0f;
+			bool expansion_all = loot_drop->Entries[j].min_expansion == ExpansionEras::AllEQEras;
 			
 			if (!expansion_all && (!min_expansion_enabled || !max_expansion_enabled))
 				continue;
@@ -320,7 +320,7 @@ void ZoneDatabase::AddLootDropToNPC(NPC *npc, uint32 lootdrop_id, ItemList* item
 				break;
 			bool min_expansion_enabled = RuleR(World, CurrentExpansion) >= loot_drop->Entries[i].min_expansion;
 			bool max_expansion_enabled = RuleR(World, CurrentExpansion) < loot_drop->Entries[i].max_expansion;
-			bool expansion_all = loot_drop->Entries[i].min_expansion == 0.0f;
+			bool expansion_all = loot_drop->Entries[i].min_expansion == ExpansionEras::AllEQEras;
 
 			uint32 itemid = loot_drop->Entries[i].item_id;
 			int8 charges = loot_drop->Entries[i].item_charges;

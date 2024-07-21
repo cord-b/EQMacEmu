@@ -28,10 +28,11 @@
 
 WorldContentService::WorldContentService()
 {
+	m_database = nullptr;
 	SetCurrentExpansion(Expansion::EXPANSION_ALL);
 }
 
-int WorldContentService::GetCurrentExpansion() const
+float WorldContentService::GetCurrentExpansion() const
 {
 	return current_expansion;
 }
@@ -42,7 +43,7 @@ WorldContentService *WorldContentService::SetExpansionContext()
 	RuleManager::Instance()->LoadRules(GetDatabase(), "default");
 
 	// pull expansion from rules
-	int expansion = RuleI(Expansion, CurrentExpansion);
+	float expansion = RuleR(World, CurrentExpansion);
 	if (expansion >= Expansion::Classic && expansion <= Expansion::MaxId) {
 		content_service.SetCurrentExpansion(expansion);
 	}
@@ -63,7 +64,7 @@ std::string WorldContentService::GetCurrentExpansionName()
 	}
 
 	if (current_expansion >= Expansion::Classic && current_expansion <= Expansion::MaxId) {
-		return Expansion::ExpansionName[content_service.GetCurrentExpansion()];
+		return Expansion::ExpansionName[(int)floor(content_service.GetCurrentExpansion())];
 	}
 
 	return "Unknown Expansion";
@@ -72,7 +73,7 @@ std::string WorldContentService::GetCurrentExpansionName()
 /**
  * @param current_expansion
  */
-void WorldContentService::SetCurrentExpansion(int current_expansion)
+void WorldContentService::SetCurrentExpansion(float current_expansion)
 {
 	WorldContentService::current_expansion = current_expansion;
 }
@@ -158,12 +159,12 @@ bool WorldContentService::IsContentFlagDisabled(const std::string &content_flag)
 bool WorldContentService::DoesPassContentFiltering(const ContentFlags &f)
 {
 	// if we're not set to (-1 All) then fail when we aren't within minimum expansion
-	if (f.min_expansion > Expansion::EXPANSION_ALL && current_expansion < f.min_expansion && current_expansion != -1) {
+	if (f.min_expansion > Expansion::EXPANSION_ALL && current_expansion < f.min_expansion && current_expansion != -1.0f) {
 		return false;
 	}
 
 	// if we're not set to (-1 All) then fail when we aren't within max expansion
-	if (f.max_expansion > Expansion::EXPANSION_ALL && current_expansion > f.max_expansion && current_expansion != -1) {
+	if (f.max_expansion > Expansion::EXPANSION_ALL && current_expansion > f.max_expansion && current_expansion != -1.0f) {
 		return false;
 	}
 

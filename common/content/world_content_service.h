@@ -29,7 +29,7 @@
 class Database;
 
 namespace Expansion {
-	static const int EXPANSION_ALL = -1;
+	static const float EXPANSION_ALL = -1.0;
 	static const int EXPANSION_FILTER_MAX = 99;
 
 	enum ExpansionNumber {
@@ -44,12 +44,13 @@ namespace Expansion {
 	/**
 	 * If you add to this, make sure you update LogCategory
 	 */
-	static const char *ExpansionName[ExpansionNumber::MaxId] = {
+	static const char *ExpansionName[ExpansionNumber::MaxId+1] = {
 		"Classic",
 		"The Ruins of Kunark",
 		"The Scars of Velious",
 		"The Shadows of Luclin",
 		"The Planes of Power",
+		"Post Planes of Power",
 	};
 }
 
@@ -60,8 +61,8 @@ public:
 
 	std::string GetCurrentExpansionName();
 
-	int GetCurrentExpansion() const;
-	void SetCurrentExpansion(int current_expansion);
+	float GetCurrentExpansion() const;
+	void SetCurrentExpansion(float current_expansion);
 
 	bool IsClassicEnabled() { return GetCurrentExpansion() >= Expansion::ExpansionNumber::Classic || GetCurrentExpansion() == Expansion::EXPANSION_ALL; }
 	bool IsTheRuinsOfKunarkEnabled() { return GetCurrentExpansion() >= Expansion::ExpansionNumber::TheRuinsOfKunark || GetCurrentExpansion() == Expansion::EXPANSION_ALL; }
@@ -92,7 +93,7 @@ public:
 	void SetContentFlag(const std::string &content_flag_name, bool enabled);
 
 private:
-	int current_expansion{};
+	float current_expansion{};
 	std::vector<ContentFlagsRepository::ContentFlags> content_flags;
 
 	// reference to database

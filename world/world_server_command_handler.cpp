@@ -256,7 +256,7 @@ namespace WorldserverCommandHandler {
 			LogInfo("No rule set configured, using default rules");
 		}
 
-		content_service.SetCurrentExpansion(RuleI(Expansion, CurrentExpansion));
+		content_service.SetCurrentExpansion(RuleR(World, CurrentExpansion));
 
 		std::vector<ContentFlagsRepository::ContentFlags> flags = {};
 		auto                                              f = ContentFlagsRepository::NewEntity();
@@ -277,7 +277,7 @@ namespace WorldserverCommandHandler {
 		LogInfo(
 			"Current expansion is [{}] ({}) is Velious Enabled [{}] Criteria [{}]",
 			content_service.GetCurrentExpansion(),
-			Expansion::ExpansionName[content_service.GetCurrentExpansion()],
+			Expansion::ExpansionName[(int)floor(content_service.GetCurrentExpansion())],
 			content_service.IsTheScarsOfVeliousEnabled() ? "true" : "false",
 			ContentFilterCriteria::apply()
 		);

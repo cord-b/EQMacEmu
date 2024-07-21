@@ -777,7 +777,7 @@ const EQ::ItemData* SharedDatabase::GetItem(uint32 id)
 		if (returned_item != nullptr)
 		{
 			bool expansion_enabled = RuleR(World, CurrentExpansion) >= returned_item->min_expansion && RuleR(World, CurrentExpansion) < returned_item->max_expansion;
-			bool expansion_all = returned_item->min_expansion == 0.0f && returned_item->max_expansion == 0.0f;
+			bool expansion_all = returned_item->min_expansion == ExpansionEras::AllEQEras && returned_item->max_expansion == ExpansionEras::AllEQEras;
 			if (expansion_enabled || expansion_all)
 			{
 				return returned_item;
@@ -805,7 +805,7 @@ const EQ::ItemData* SharedDatabase::IterateItems(uint32* id)
 			if (returned_item != nullptr)
 			{
 				bool expansion_enabled = RuleR(World, CurrentExpansion) >= returned_item->min_expansion && RuleR(World, CurrentExpansion) < returned_item->max_expansion;
-				bool expansion_all = returned_item->min_expansion == 0.0f && returned_item->max_expansion == 0.0f;
+				bool expansion_all = returned_item->min_expansion == ExpansionEras::AllEQEras && returned_item->max_expansion == ExpansionEras::AllEQEras;
 				if (expansion_enabled || expansion_all)
 				{
 					++(*id);
@@ -1766,8 +1766,8 @@ void SharedDatabase::LoadLootTables(void *data, uint32 size)
             lt->maxcash = static_cast<uint32>(atoul(row[2]));
             lt->avgcoin = static_cast<uint32>(atoul(row[3]));
 
-			lt->content_flags.min_expansion = static_cast<int16>(atoi(row[10]));
-			lt->content_flags.max_expansion = static_cast<int16>(atoi(row[11]));
+			lt->content_flags.min_expansion = static_cast<float>(atof(row[10]));
+			lt->content_flags.max_expansion = static_cast<float>(atof(row[11]));
 
 			strn0cpy(lt->content_flags.content_flags, row[12], sizeof(lt->content_flags.content_flags));
 			strn0cpy(lt->content_flags.content_flags_disabled, row[13], sizeof(lt->content_flags.content_flags_disabled));
@@ -1824,6 +1824,10 @@ void SharedDatabase::LoadLootDrops(void *data, uint32 size)
 				lootdrop_entries.minlevel,
 				lootdrop_entries.maxlevel,
 				lootdrop_entries.multiplier,
+				lootdrop_entries.min_looter_level,
+				lootdrop_entries.item_loot_lockout_timer,
+				lootdrop_entries.min_expansion,
+				lootdrop_entries.max_expansion,
 				lootdrop.min_expansion,
 				lootdrop.max_expansion,
 				lootdrop.content_flags,
@@ -1835,7 +1839,7 @@ void SharedDatabase::LoadLootDrops(void *data, uint32 size)
 				TRUE {}
 			ORDER BY lootdrop_id
 		),
-		ContentFilterCriteria::apply()
+		LootContentFilterCriteria::apply("lootdrop", "lootdrop_entries")
 	);
 
     auto results = QueryDatabase(query);
@@ -1856,11 +1860,11 @@ void SharedDatabase::LoadLootDrops(void *data, uint32 size)
 			current_entry = 0;
 			current_id = id;
 
-			p_loot_drop_struct->content_flags.min_expansion = static_cast<int16>(atoi(row[8]));
-			p_loot_drop_struct->content_flags.max_expansion = static_cast<int16>(atoi(row[9]));
+			p_loot_drop_struct->content_flags.min_expansion = static_cast<float>(atof(row[12]));
+			p_loot_drop_struct->content_flags.max_expansion = static_cast<float>(atof(row[13]));
 
-			strn0cpy(p_loot_drop_struct->content_flags.content_flags, row[10], sizeof(p_loot_drop_struct->content_flags.content_flags));
-			strn0cpy(p_loot_drop_struct->content_flags.content_flags_disabled, row[11], sizeof(p_loot_drop_struct->content_flags.content_flags_disabled));
+			strn0cpy(p_loot_drop_struct->content_flags.content_flags, row[14], sizeof(p_loot_drop_struct->content_flags.content_flags));
+			strn0cpy(p_loot_drop_struct->content_flags.content_flags_disabled, row[15], sizeof(p_loot_drop_struct->content_flags.content_flags_disabled));
         }
 
 		if (current_entry >= 1260) {
@@ -1874,10 +1878,10 @@ void SharedDatabase::LoadLootDrops(void *data, uint32 size)
 		p_loot_drop_struct->Entries[current_entry].minlevel = static_cast<uint8>(atoi(row[5]));
 		p_loot_drop_struct->Entries[current_entry].maxlevel = static_cast<uint8>(atoi(row[6]));
 		p_loot_drop_struct->Entries[current_entry].multiplier = static_cast<uint8>(atoi(row[7]));
-		p_loot_drop_struct->Entries[current_entry].min_expansion = (std::stof(row[8]));
-		p_loot_drop_struct->Entries[current_entry].max_expansion = (std::stof(row[9]));
-		p_loot_drop_struct->Entries[current_entry].min_looter_level = (atoi(row[10]));
-		p_loot_drop_struct->Entries[current_entry].item_loot_lockout_timer = static_cast<uint32>(atoul(row[11]));
+		p_loot_drop_struct->Entries[current_entry].min_expansion = atof(row[10]);
+		p_loot_drop_struct->Entries[current_entry].max_expansion = atof(row[11]);
+		p_loot_drop_struct->Entries[current_entry].min_looter_level = (atoi(row[8]));
+		p_loot_drop_struct->Entries[current_entry].item_loot_lockout_timer = static_cast<uint32>(atoul(row[9]));
         ++(p_loot_drop_struct->NumEntries);
         ++current_entry;
     }

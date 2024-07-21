@@ -590,7 +590,7 @@ bool ZoneDatabase::PopulateZoneSpawnListClose(uint32 zoneid, LinkedList<Spawn2*>
 		"raid_target_spawnpoint "
 		"FROM "
 		"spawn2 "
-		"AND ((%.2f >= min_expansion AND %.2f < max_expansion) OR (min_expansion = 0 AND max_expansion = 0))",
+		"AND ((%.2f >= min_expansion AND %.2f < max_expansion) OR (min_expansion = -1.0 AND max_expansion = -1.0))",
 		zone_name,
 		RuleR(World, CurrentExpansion),
 		RuleR(World, CurrentExpansion)

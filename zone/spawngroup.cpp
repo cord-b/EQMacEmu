@@ -323,7 +323,7 @@ bool ZoneDatabase::LoadSpawnGroupsByID(int spawngroupid, SpawnGroupList* spawn_g
 
 	query = StringFormat("SELECT DISTINCT(spawnentry.spawngroupID), spawnentry.npcid, "
                         "spawnentry.chance, spawngroup.spawn_limit, spawnentry.mintime, spawnentry.maxtime FROM spawnentry, spawngroup "
-                        "WHERE spawnentry.spawngroupID = '%i' AND spawngroup.spawn_limit = '0' AND ((spawnentry.min_expansion >= %.2f AND spawnentry.max_expansion < %.2f) OR (spawnentry.min_expansion = 0 AND spawnentry.max_expansion = 0)) "
+                        "WHERE spawnentry.spawngroupID = '%i' AND spawngroup.spawn_limit = '0' AND ((spawnentry.min_expansion >= %.2f AND spawnentry.max_expansion < %.2f) OR (spawnentry.min_expansion = -1.0 AND spawnentry.max_expansion = -1.0)) "
                         "ORDER BY chance", spawngroupid, RuleR(World, CurrentExpansion), RuleR(World, CurrentExpansion));
     results = QueryDatabase(query);
 	if (!results.Success()) {

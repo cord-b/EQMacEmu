@@ -24,8 +24,8 @@
 #pragma pack(1)
 
 struct ContentFlags {
-	int16       min_expansion;
-	int16       max_expansion;
+	float       min_expansion;
+	float       max_expansion;
 	char        content_flags[100];
 	char        content_flags_disabled[100];
 };

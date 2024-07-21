@@ -171,3 +171,23 @@ UPDATE zone_points SET min_expansion = ROUND((ROUND(min_expansion, 1) - 1.0), 1)
 UPDATE zone_points SET max_expansion = ROUND((ROUND(max_expansion, 1) - 1.0), 1) WHERE max_expansion != -1.0;
 UPDATE items SET min_expansion = ROUND((ROUND(min_expansion, 1) - 1.0), 1) WHERE min_expansion != -1.0;
 UPDATE items SET max_expansion = ROUND((ROUND(max_expansion, 1) - 1.0), 1) WHERE max_expansion != -1.0;
+
+CREATE TABLE `global_loot`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `description` varchar(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL,
+  `loottable_id` int(11) NOT NULL,
+  `enabled` tinyint(4) NOT NULL DEFAULT 1,
+  `min_level` int(11) NOT NULL DEFAULT 0,
+  `max_level` int(11) NOT NULL DEFAULT 0,
+  `rare` tinyint(4) NULL DEFAULT NULL,
+  `raid` tinyint(4) NULL DEFAULT NULL,
+  `race` mediumtext CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL,
+  `class` mediumtext CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL,
+  `bodytype` mediumtext CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL,
+  `zone` mediumtext CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL,
+  `min_expansion` float NOT NULL DEFAULT -1.0,
+  `max_expansion` float NOT NULL DEFAULT -1.0,
+  `content_flags` varchar(100) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL,
+  `content_flags_disabled` varchar(100) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 40000000 CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = Dynamic;

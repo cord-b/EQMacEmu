@@ -715,13 +715,13 @@ enum Expansions
 // Values are bitwise, so we can compare with the expansion field in account.
 enum ExpansionEras : int
 {
-	AllEQEras = 0,
-	ClassicEQEra = 1,
-	KunarkEQEra = 2,
-	VeliousEQEra = 3,
-	LuclinEQEra = 4,
-	PlanesEQEra = 5,
-	PostPlanesEra = 6
+	AllEQEras = -1,
+	ClassicEQEra = 0,
+	KunarkEQEra = 1,
+	VeliousEQEra = 2,
+	LuclinEQEra = 3,
+	PlanesEQEra = 4,
+	PostPlanesEra = 5
 };
 
 static const uint32 MAX_SPELL_DB_ID_VAL = 65535;
