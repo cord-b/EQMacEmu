@@ -132,7 +132,7 @@ public:
 	//Actual Implementation Stuff
 
 	void	RaidMessage_StringID(Mob* sender, uint32 type, uint32 string_id, const char* message,const char* message2=0,const char* message3=0,const char* message4=0,const char* message5=0,const char* message6=0,const char* message7=0,const char* message8=0,const char* message9=0, uint32 distance = 0);
-	void	CastGroupSpell(Mob* caster,uint16 spellid, uint32 gid, bool isrecourse=false, int recourse_level=-1);
+	void	CastGroupSpell(Mob* caster,uint16 spellid, uint32 gid, bool isrecourse=false, int recourse_level=-1, int item_id = -1);
 	void	SplitExp(uint32 exp, Mob* killed_mob);
 	int32	GetTotalRaidDamage(Mob* other);
 	void	BalanceHP(int32 penalty, uint32 gid, float range = 0, Mob* caster = nullptr, int32 limit = 0);

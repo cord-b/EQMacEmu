@@ -965,6 +965,10 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				newbon->Metabolism += base1;
 				break;
 
+			case SE_ExperienceBonus:
+				newbon->EXPBonus += base2;
+				break;
+
 			case SE_ImprovedReclaimEnergy:
 			{
 				if((base1 < 0) && (newbon->ImprovedReclaimEnergy > base1))
@@ -1993,6 +1997,10 @@ void Mob::ApplySpellsBonuses(uint16 spell_id, uint8 casterlevel, StatBonuses* ne
 				
 			case SE_Metabolism:
 				new_bonus->Metabolism += effect_value;
+				break;
+
+			case SE_ExperienceBonus:
+				new_bonus->EXPBonus += base2;
 				break;
 
 			case SE_ImprovedReclaimEnergy:

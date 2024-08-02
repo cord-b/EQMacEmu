@@ -248,7 +248,7 @@ public:
 	bool SpellFinished(uint16 spell_id, Mob *target, EQ::spells::CastingSlot slot = EQ::spells::CastingSlot::Item, uint16 mana_used = 0,
 		uint32 inventory_slot = 0xFFFFFFFF, int16 resist_adjust = 0, bool isproc = false, bool isrecourse=false, int recourse_level=-1);
 	virtual bool SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect = false,
-		bool use_resist_adjust = false, int16 resist_adjust = 0, bool isproc = false, uint16 ae_caster_id = 0, bool isrecourse=false, int spell_level=-1);
+		bool use_resist_adjust = false, int16 resist_adjust = 0, bool isproc = false, uint16 ae_caster_id = 0, bool isrecourse=false, int spell_level=-1, int itemid=-1);
 	virtual bool SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_level, float partial = 100);
 	virtual bool DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_center,
 		CastAction_type &CastAction, bool isproc = false, EQ::spells::CastingSlot slot = EQ::spells::CastingSlot::Item);

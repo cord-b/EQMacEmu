@@ -291,6 +291,7 @@ struct StatBonuses {
 	int32	AlterNPCLevel;						// amount of lvls +/-
 	bool	BerserkSPA;							// berserk effect
 	int32	Metabolism;							// Food/drink consumption rates.
+	int32	EXPBonus;							// Experience Bonus
 
 	// AAs
 	int8	BaseMovementSpeed;					// Adjust base run speed, does not stack with other movement bonuses.

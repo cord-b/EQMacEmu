@@ -58,7 +58,7 @@ public:
 	bool	Process();
 	bool	IsGroup()			{ return true; }
 	void	SendGroupJoinOOZ(Mob* NewMember);
-	void	CastGroupSpell(Mob* caster,uint16 spellid, bool isrecourse=false, int recourse_level=-1);
+	void	CastGroupSpell(Mob* caster,uint16 spellid, bool isrecourse=false, int recourse_level=-1, int item_id = -1);
 	void	SplitExp(uint32 exp, Mob* killed_mob);
 	bool	ProcessGroupSplit(Mob* killed_mob, struct GroupExpSplit_Struct& gs, bool isgreen);
 	void	GiveGroupSplitExp(Mob* killed_mob, uint8 maxlevel, int16 weighted_levels, int conlevel, float groupexp, int8 close_count);

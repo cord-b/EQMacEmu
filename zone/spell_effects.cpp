@@ -2289,6 +2289,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 			case SE_FinishingBlow:
 			case SE_FinishingBlowLvl:
 			case SE_AETaunt:
+			case SE_ExperienceBonus:
 			case SE_SkillAttack:			// Used after PoP
 			{
 				break;
@@ -4460,7 +4461,7 @@ int16 Client::GetFocusEffect(focusType type, uint16 spell_id, std::string& item_
 	return realTotal + realTotal2 + realTotal3;
 }
 
-void Client::ApplyDurationFocus(uint16 spell_id, uint16 buffslot, Mob* spelltar, int spell_level)
+void Client::ApplyDurationFocus(uint16 spell_id, uint16 buffslot, Mob* spelltar, int spell_level, int item_id)
 {
 	std::string item_name;
 	if (IsBuffSpell(spell_id) && !IsSplurtFormulaSpell(spell_id))
@@ -4472,7 +4473,7 @@ void Client::ApplyDurationFocus(uint16 spell_id, uint16 buffslot, Mob* spelltar,
 		{
 			casting_spell_focus_duration = GetFocusEffect(focusSpellDuration, spell_id, item_name, false, spell_level) + 100;
 		}
-		if (casting_spell_focus_duration > 100 || (spell_id == SPELL_PACIFY && RuleB(Spells, ReducePacifyDuration)))
+		if (casting_spell_focus_duration > 100 || (spell_id == SPELL_PACIFY && RuleB(Spells, ReducePacifyDuration)) || IsExperienceBonusEffects(spell_id) && item_id != -1)
 		{
 			Buffs_Struct *buffs = spelltar->GetBuffs();
 			if (buffs)
@@ -4485,6 +4486,12 @@ void Client::ApplyDurationFocus(uint16 spell_id, uint16 buffslot, Mob* spelltar,
 					Log(Logs::General, Logs::Focus, "Pacify spell TAKP special - reducing duration from %d to %d before focus", pacify_original_duration, pacify_modified_duration);
 					spelltar->BuffModifyDurationBySpellID(spell_id, pacify_modified_duration, false); // update false because we call the function again below to really update
 				}
+
+				if (spell_id == SPELL_JAXANS_JIG_VIGOR && item_id != -1)
+				{
+					int32 experience_item_duration = RuleI(Quarm, ExperiencePotionDuration); //
+				}
+
 				int32 tics = buffs[buffslot].ticsremaining;
 				int32 newduration = (tics * casting_spell_focus_duration) / 100;
 

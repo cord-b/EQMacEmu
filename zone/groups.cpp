@@ -581,7 +581,7 @@ bool Group::DelMember(Mob* oldmember)
 }
 
 // does the caster + group
-void Group::CastGroupSpell(Mob* caster, uint16 spell_id, bool isrecourse, int recourse_level) {
+void Group::CastGroupSpell(Mob* caster, uint16 spell_id, bool isrecourse, int recourse_level, int item_id) {
 
 	uint32 z;
 	float range, distance;
@@ -601,21 +601,21 @@ void Group::CastGroupSpell(Mob* caster, uint16 spell_id, bool isrecourse, int re
 	{
 		if(members[z] == caster) 
 		{
-			caster->SpellOnTarget(spell_id, caster, false, false, 0, false, 0, true, recourse_level);
+			caster->SpellOnTarget(spell_id, caster, false, false, 0, false, 0, true, recourse_level, item_id);
 			hitcaster = true;
 #ifdef GROUP_BUFF_PETS
 			if(caster->GetPet() && caster->HasPetAffinity() && !caster->GetPet()->IsCharmedPet())
-				caster->SpellOnTarget(spell_id, caster->GetPet());
+				caster->SpellOnTarget(spell_id, caster->GetPet(), false, false, 0, false, 0, false, -1, item_id);
 #endif
 		}
 		else if(members[z] != nullptr)
 		{
 			distance = DistanceSquared(caster->GetPosition(), members[z]->GetPosition());
 			if(distance <= range2) {
-				caster->SpellOnTarget(spell_id, members[z], false, false, 0, false, 0, isrecourse, recourse_level);
+				caster->SpellOnTarget(spell_id, members[z], false, false, 0, false, 0, isrecourse, recourse_level, item_id);
 #ifdef GROUP_BUFF_PETS
 				if(members[z]->GetPet() && members[z]->HasPetAffinity() && !members[z]->GetPet()->IsCharmedPet())
-					caster->SpellOnTarget(spell_id, members[z]->GetPet(), false, false, 0, false, 0, isrecourse, recourse_level);
+					caster->SpellOnTarget(spell_id, members[z]->GetPet(), false, false, 0, false, 0, isrecourse, recourse_level, item_id);
 #endif
 			} else
 				Log(Logs::Detail, Logs::Spells, "Group spell: %s is out of range %f at distance %f from %s", members[z]->GetName(), range, distance, caster->GetName());
@@ -623,7 +623,7 @@ void Group::CastGroupSpell(Mob* caster, uint16 spell_id, bool isrecourse, int re
 	}
 
 	if (!hitcaster && caster->IsClient() && caster->CastToClient()->TGB())
-		caster->SpellOnTarget(spell_id, caster, false, false, 0, false, 0, isrecourse, recourse_level);
+		caster->SpellOnTarget(spell_id, caster, false, false, 0, false, 0, isrecourse, recourse_level, item_id);
 
 	castspell = false;
 	disbandcheck = true;

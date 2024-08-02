@@ -674,7 +674,7 @@ Client *Raid::GetClientByIndex(uint16 index)
 	return members[index].member;
 }
 
-void Raid::CastGroupSpell(Mob* caster, uint16 spellid, uint32 gid, bool isrecourse, int recourse_level)
+void Raid::CastGroupSpell(Mob* caster, uint16 spellid, uint32 gid, bool isrecourse, int recourse_level, int item_id)
 {
 	float range, distance;
 
@@ -691,11 +691,11 @@ void Raid::CastGroupSpell(Mob* caster, uint16 spellid, uint32 gid, bool isrecour
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
 		if(members[x].member && members[x].member == caster) {
-			caster->SpellOnTarget(spellid, caster);
+			caster->SpellOnTarget(spellid, caster, false, false, 0, false, 0, false, -1, item_id);
 			hitcaster = true;
 #ifdef GROUP_BUFF_PETS
 			if(caster->GetPet() && caster->HasPetAffinity() && !caster->GetPet()->IsCharmedPet())
-				caster->SpellOnTarget(spellid, caster->GetPet());
+				caster->SpellOnTarget(spellid, caster->GetPet(), false, false, 0, false, 0, false, -1, item_id);
 #endif
 		}
 		else if(members[x].member != nullptr && members[x].member->Connected())
@@ -703,10 +703,10 @@ void Raid::CastGroupSpell(Mob* caster, uint16 spellid, uint32 gid, bool isrecour
 			if(members[x].GroupNumber == gid){
 				distance = DistanceSquared(caster->GetPosition(), members[x].member->GetPosition());
 				if(distance <= range2){
-					caster->SpellOnTarget(spellid, members[x].member);
+					caster->SpellOnTarget(spellid, members[x].member, false, false, 0, false, 0, false, -1, item_id);
 #ifdef GROUP_BUFF_PETS
 					if(members[x].member->GetPet() && members[x].member->HasPetAffinity() && !members[x].member->GetPet()->IsCharmedPet())
-						caster->SpellOnTarget(spellid, members[x].member->GetPet());
+						caster->SpellOnTarget(spellid, members[x].member->GetPet(), false, false, 0, false, 0, false, -1, item_id);
 #endif
 				}
 				else{
@@ -717,7 +717,7 @@ void Raid::CastGroupSpell(Mob* caster, uint16 spellid, uint32 gid, bool isrecour
 	}
 
 	if (!hitcaster && caster->IsClient() && caster->CastToClient()->TGB())
-		caster->SpellOnTarget(spellid, caster);
+		caster->SpellOnTarget(spellid, caster, false, false, 0, false, 0, false, -1, item_id);
 }
 
 int32 Raid::GetTotalRaidDamage(Mob* other)

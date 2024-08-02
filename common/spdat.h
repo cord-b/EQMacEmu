@@ -33,6 +33,7 @@
 #define SPELL_MINOR_ILLUSION 287
 #define SPELL_ILLUSION_TREE 601
 #define SPELL_CINDAS_CHARISMATIC_CARILLON 708
+#define SPELL_JAXANS_JIG_VIGOR 722
 #define SPELL_CASSINDRAS_CHORUS_OF_CLARITY 723
 #define SPELL_RESURRECTION_EFFECTS 756
 #define SPELL_DRAGON_CHARM 841
@@ -482,6 +483,8 @@ typedef enum {
 #define SE_HeadShotLevel				346	// implemented[AA] - HeadShot max level to kill
 #define SE_LimitSpellGroup				385	// implemented - Limits to spell group(ie type 3 reuse reduction augs that are class specific and thus all share s SG)
 #define SE_FinishingBlowLvl				440 // implemented[AA] - Sets the level Finishing blow can be triggered on an NPC
+#define SE_ExperienceBonus				500 // Custom - EXP Bonus
+
 // LAST
 
 
@@ -716,6 +719,7 @@ int32 CalculateCurseCounters(uint16 spell_id);
 int32 CalculateCounters(uint16 spell_id);
 bool IsCombatSkill(uint16 spell_id);
 bool IsResurrectionEffects(uint16 spell_id);
+bool IsExperienceBonusEffects(uint16 spell_id);
 bool IsRuneSpell(uint16 spell_id);
 bool IsMagicRuneSpell(uint16 spell_id);
 bool IsManaTapSpell(uint16 spell_id);

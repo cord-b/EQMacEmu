@@ -487,7 +487,7 @@ public:
 	int GetDiscBuffSlot() { return 15; }
 	virtual void InitializeBuffSlots();
 	virtual void UninitializeBuffSlots();
-	void ApplyDurationFocus(uint16 spell_id, uint16 buffslot, Mob* spelltar = nullptr, int spell_level=-1);
+	void ApplyDurationFocus(uint16 spell_id, uint16 buffslot, Mob* spelltar = nullptr, int spell_level=-1, int item_id=-1);
 	bool RestictedManastoneClick(int16 zone_id);
 
 	inline const int32 GetBaseHP() const { return base_hp; }

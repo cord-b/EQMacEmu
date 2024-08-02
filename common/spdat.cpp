@@ -819,6 +819,14 @@ bool IsResurrectionEffects(uint16 spell_id)
 	return false;
 }
 
+bool IsExperienceBonusEffects(uint16 spell_id)
+{
+	if (IsValidSpell(spell_id) && spell_id == SPELL_JAXANS_JIG_VIGOR)
+		return true;
+
+	return false;
+}
+
 bool IsRuneSpell(uint16 spell_id)
 {
 	if (IsValidSpell(spell_id))

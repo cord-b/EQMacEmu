@@ -2049,12 +2049,14 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, CastingSlot slot, ui
 		CastAction = AECaster;
 	}
 
-
+	int item_id_for_clicky = -1;
 	// a hackish way to let CheckHealAggroAmount() called from SpellOnTarget() to know that the spell comes from a clickable
 	// adding another parameter to SpellOnTarget() just for this would be rather bloaty
 	if (IsClient() && slot == CastingSlot::Item && IsBuffSpell(spell_id))
+	{
 		isproc = true;
-
+		item_id_for_clicky = 1;
+	}
 	//
 	// Switch #2 - execute the spell
 	//
@@ -2070,14 +2072,14 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, CastingSlot slot, ui
 				return(false);
 			}
 			if (isproc || slot == CastingSlot::Item) {
-				if (!SpellOnTarget(spell_id, spell_target, false, true, resist_adjust, isproc, 0, isrecourse, recourse_level)) {
+				if (!SpellOnTarget(spell_id, spell_target, false, true, resist_adjust, isproc, 0, isrecourse, recourse_level, item_id_for_clicky)) {
 					if (IsDireCharmSpell(spell_id)) {
 						if (casting_spell_type == 1)
 							InterruptSpell();
 					}
 				}
 			} else {
-				if(!SpellOnTarget(spell_id, spell_target, false, true, resist_adjust, false, 0, isrecourse, recourse_level)) {
+				if(!SpellOnTarget(spell_id, spell_target, false, true, resist_adjust, false, 0, isrecourse, recourse_level, item_id_for_clicky)) {
 					if(IsBuffSpell(spell_id) && IsBeneficialSpell(spell_id)) {
 						// Prevent mana usage/timers being set for beneficial buffs
 						if(casting_spell_type == 1)
@@ -2127,7 +2129,7 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, CastingSlot slot, ui
 
 			if (isproc) // Dagarns Tail
 			{
-				SpellOnTarget(spell_id, spell_target, false, true, resist_adjust, isproc);
+				SpellOnTarget(spell_id, spell_target, false, true, resist_adjust, isproc, item_id_for_clicky);
 			}
 			else
 			{
@@ -2158,7 +2160,7 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, CastingSlot slot, ui
 			}
 			else {
 				if (ae_center && ae_center == this && IsBeneficialSpell(spell_id) && (!IsLuclinPortSpell(spell_id) || !IsUnTargetable()))
-					SpellOnTarget(spell_id, this);
+					SpellOnTarget(spell_id, this, false, false, 0, false, 0, false, -1, item_id_for_clicky);
 
 				bool affect_caster = !IsNPC();	//NPC AE spells do not affect the NPC caster
 				entity_list.AESpell(this, ae_center, spell_id, affect_caster, resist_adjust, spell_target);
@@ -2197,9 +2199,9 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, CastingSlot slot, ui
 						if (target_raid) {
 							gid = target_raid->GetGroup(spell_target->GetName());
 							if (gid >= 0 && gid < MAX_RAID_GROUPS)
-								target_raid->CastGroupSpell(this, spell_id, gid, isrecourse, recourse_level);
+								target_raid->CastGroupSpell(this, spell_id, gid, isrecourse, recourse_level, item_id_for_clicky);
 							else
-								SpellOnTarget(spell_id, spell_target, false, false, 0, isproc, 0, true, recourse_level);
+								SpellOnTarget(spell_id, spell_target, false, false, 0, isproc, 0, true, recourse_level, item_id_for_clicky);
 						}
 					}
 					else
@@ -2208,19 +2210,19 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, CastingSlot slot, ui
 						// too, but if not then we have to do that here.
 
 						if (spell_target != this) {
-							SpellOnTarget(spell_id, this, false, false, 0, isproc, 0, isrecourse, recourse_level);
+							SpellOnTarget(spell_id, this, false, false, 0, isproc, 0, isrecourse, recourse_level, item_id_for_clicky);
 #ifdef GROUP_BUFF_PETS
 							//pet too
 							if (GetPet() && HasPetAffinity() && !GetPet()->IsCharmedPet())
-								SpellOnTarget(spell_id, GetPet(), false, false, 0, isproc, 0, isrecourse, recourse_level);
+								SpellOnTarget(spell_id, GetPet(), false, false, 0, isproc, 0, isrecourse, recourse_level, item_id_for_clicky);
 #endif
 						}
 
-						SpellOnTarget(spell_id, spell_target, false, false, 0, isproc, 0, isrecourse, recourse_level);
+						SpellOnTarget(spell_id, spell_target, false, false, 0, isproc, 0, isrecourse, recourse_level, item_id_for_clicky);
 #ifdef GROUP_BUFF_PETS
 						//pet too
 						if (spell_target->GetPet() && HasPetAffinity() && !spell_target->GetPet()->IsCharmedPet())
-							SpellOnTarget(spell_id, spell_target->GetPet(), false, false, 0, isproc, 0, isrecourse, recourse_level);
+							SpellOnTarget(spell_id, spell_target->GetPet(), false, false, 0, isproc, 0, isrecourse, recourse_level, item_id_for_clicky);
 #endif
 					}
 				}
@@ -2231,12 +2233,12 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, CastingSlot slot, ui
 				{
 					// group spell cast by NPC has a special case in AESpell
 					// Balance of the Nameless, Cazic's Gift, recourse spells
-					entity_list.AESpell(this, this, spell_id, true, resist_adjust, spell_target);
+					entity_list.AESpell(this, this, spell_id, true, resist_adjust, spell_target, item_id_for_clicky);
 				}
 				else
 				{
 					// self only
-					SpellOnTarget(spell_id, this, false, false, 0, isproc, 0, isrecourse, recourse_level);
+					SpellOnTarget(spell_id, this, false, false, 0, isproc, 0, isrecourse, recourse_level, item_id_for_clicky);
 				}
 			}
 			break;
@@ -2634,7 +2636,7 @@ bool Mob::CancelMagicShouldAggro(uint16 spell_id, Mob* spelltar)
 // and if you don't want effects just return false. interrupting here will
 // break stuff
 //
-bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_resist_adjust, int16 resist_adjust, bool isproc, uint16 ae_caster_id, bool isrecourse, int recourse_spell_level)
+bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_resist_adjust, int16 resist_adjust, bool isproc, uint16 ae_caster_id, bool isrecourse, int recourse_spell_level, int item_id)
 {
 	// well we can't cast a spell on target without a target
 	if(!spelltar) {
@@ -2755,6 +2757,15 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 		}
 		safe_delete(action_packet);
 		return false;
+	}
+
+	if (IsEffectInSpell(spell_id, SE_ExperienceBonus)) {
+		if (spelltar->IsClient() && spelltar->HasSpellEffect(SE_ExperienceBonus)) {
+			Log(Logs::General, Logs::Spells, "Can't stack two experience bonuses.");
+			Message_StringID(Chat::SpellFailure, SPELL_NO_HOLD);
+			safe_delete(action_packet);
+			return true; // We want the spell to finish casting.
+		}
 	}
 
 	if (IsEffectInSpell(spell_id, SE_Levitate)) {
@@ -3221,7 +3232,7 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 	if (IsClient() && IsBuffSpell(spell_id))
 	{
 		int caster_spell_level = spells[spell_id].classes[GetClass() - 1];
-		CastToClient()->ApplyDurationFocus(spell_id, buffslot, spelltar, isrecourse ? recourse_spell_level : caster_spell_level);
+		CastToClient()->ApplyDurationFocus(spell_id, buffslot, spelltar, isrecourse ? recourse_spell_level : caster_spell_level, item_id);
 	}
 
 	Log(Logs::Detail, Logs::Spells, "Cast of %d by %s on %s complete successfully.", spell_id, GetName(), spelltar->GetName());
@@ -3362,7 +3373,7 @@ void Mob::BuffFadeAll(bool skiprez, bool message)
 	for (int j = 0; j < buff_count; j++) {
 		if (buffs[j].spellid != SPELL_UNKNOWN)
 		{
-			if (!skiprez || (skiprez && !IsResurrectionEffects(buffs[j].spellid)))
+			if (!skiprez && !IsExperienceBonusEffects(buffs[j].spellid) || (skiprez && !IsResurrectionEffects(buffs[j].spellid)) && !IsExperienceBonusEffects(buffs[j].spellid))
 				BuffFadeBySlot(j, false, message);
 		}
 	}

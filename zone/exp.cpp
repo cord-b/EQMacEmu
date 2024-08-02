@@ -70,6 +70,8 @@ float Mob::GetBaseEXP()
 		zemmod = RuleR(Quarm, InstanceZEMOverride);
 	}
 
+	server_bonus += (float)(spellbonuses.EXPBonus + itembonuses.EXPBonus + aabonuses.EXPBonus) / 100.f;
+
 	float npc_pct = 1.0f;
 	if (IsNPC())
 		npc_pct = static_cast<float>(CastToNPC()->GetExpPercent()) / 100.0f;
