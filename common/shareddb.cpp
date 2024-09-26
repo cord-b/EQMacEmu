@@ -1006,9 +1006,6 @@ std::string SharedDatabase::EncodeCustomDataToString(const EQ::ItemCustomData* c
 	for(auto iter = custom_data->cbegin(); iter != end; ++iter) {
 		// keys starting with '#' will be treated as transient data and do not get encoded/saved.
 		if (!iter->first.empty() && iter->first[0] != '#') {
-			if (!ret_val.empty()) {
-				ret_val += "^";
-			}
 			ret_val += iter->first;
 			ret_val += "^";
 			ret_val += iter->second;
