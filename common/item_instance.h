@@ -65,6 +65,7 @@ namespace EQ
 	class InventoryProfile;
 
 	typedef std::unordered_map<std::string, std::string> ItemCustomData;
+	const ItemCustomData EmptyItemCustomData;
 
 	class ItemInstance
 	{
@@ -74,9 +75,9 @@ namespace EQ
 		/////////////////////////
 
 		// Constructors/Destructor
-		ItemInstance(const EQ::ItemData* item = nullptr, int8 charges = 0, const ItemCustomData* custom_data = nullptr);
+		ItemInstance(const EQ::ItemData* item = nullptr, int8 charges = 0, const ItemCustomData& custom_data = EmptyItemCustomData);
 
-		ItemInstance(SharedDatabase* db, int16 item_id, int8 charges = 0, const ItemCustomData* custom_data = nullptr);
+		ItemInstance(SharedDatabase* db, int16 item_id, int8 charges = 0, const ItemCustomData& custom_data = EmptyItemCustomData);
 
 		ItemInstance(ItemInstTypes use_type);
 
@@ -148,8 +149,8 @@ namespace EQ
 		bool IsOnCursorQueue() const { return m_cursorqueue; }
 		void SetCursorQueue(bool val) { m_cursorqueue = val; }
 
-		ItemCustomData* GetCustomData() { return &m_custom_data; }
-		const ItemCustomData* GetCustomData() const { return &m_custom_data; }
+		ItemCustomData& GetCustomData() { return m_custom_data; }
+		const ItemCustomData& GetCustomData() const { return m_custom_data; }
 		std::string GetCustomDataString() const;
 		std::string GetCustomData(std::string identifier);
 		void SetCustomData(std::string identifier, std::string value);
@@ -176,14 +177,14 @@ namespace EQ
 		size_t GetSelfFoundCharacterName(char* out) const;
 
 		// Marks the SF character ID that found this item. Only updates if not already set. Setting 0 will not clear this field.
-		static void SetSelfFoundCharacter(const EQ::ItemData* item_data, EQ::ItemCustomData* custom_data, uint32 self_found_character_id, const char* name);
+		static void SetSelfFoundCharacter(const EQ::ItemData* item_data, EQ::ItemCustomData& custom_data, uint32 self_found_character_id, const char* name);
 		// Marks the SF character ID that found this item. Only updates if not already set. Setting 0 will not clear this field.
-		static void SetSelfFoundCharacter(const EQ::ItemData* item_data, EQ::ItemCustomData* custom_data, uint32 self_found_character_id, const std::string& name);
+		static void SetSelfFoundCharacter(const EQ::ItemData* item_data, EQ::ItemCustomData& custom_data, uint32 self_found_character_id, const std::string& name);
 
 		// Marks the SF character ID that found this item. Only updates if not already set. Setting 0 will not clear this field.
-		void SetSelfFoundCharacter(uint32 self_found_character_id, const char* name) { SetSelfFoundCharacter(m_item, &m_custom_data, self_found_character_id, name); }
+		void SetSelfFoundCharacter(uint32 self_found_character_id, const char* name) { SetSelfFoundCharacter(m_item, m_custom_data, self_found_character_id, name); }
 		// Marks the SF character ID that found this item. Only updates if not already set. Setting 0 will not clear this field.
-		void SetSelfFoundCharacter(uint32 self_found_character_id, const std::string& name) { SetSelfFoundCharacter(m_item, &m_custom_data, self_found_character_id, name); }
+		void SetSelfFoundCharacter(uint32 self_found_character_id, const std::string& name) { SetSelfFoundCharacter(m_item, m_custom_data, self_found_character_id, name); }
 
 		// Marks the SF character ID to all contents in this bag. Only updates if not already set.
 		// Setting 0 will not clear this field.

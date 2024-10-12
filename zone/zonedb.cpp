@@ -431,7 +431,7 @@ void ZoneDatabase::LoadWorldContainer(uint32 parentid, EQ::ItemInstance* contain
 
         EQ::ItemInstance* inst = database.CreateItem(item_id, charges);
         if (inst) {
-            DecodeCustomDataFromString(inst->GetCustomData(), row[3]);
+            InitializeCustomDataFromString(inst->GetCustomData(), row[3]);
             // Put item inside world container
             container->PutItem(index, *inst);
         }
@@ -3167,7 +3167,7 @@ uint32 ZoneDatabase::SaveCharacterCorpse(uint32 charid, const char* charname, ui
 			if (!item)
 				continue;
 
-			custom_data_str = Strings::Escape(EncodeCustomDataToString(&item->custom_data));
+			custom_data_str = Strings::Escape(EncodeCustomDataToString(item->custom_data));
 			if (first_entry != 1) {
 				corpse_items_query = StringFormat("REPLACE INTO `character_corpse_items` \n"
 					" (corpse_id, equip_slot, item_id, charges, custom_data) \n"
@@ -3176,7 +3176,7 @@ uint32 ZoneDatabase::SaveCharacterCorpse(uint32 charid, const char* charname, ui
 					item->equip_slot,
 					item->item_id,
 					item->charges,
-					custom_data_str.c_str()
+					custom_data_str.length() ? custom_data_str.c_str() : ""
 				);
 				first_entry = 1;
 			}
@@ -3186,7 +3186,7 @@ uint32 ZoneDatabase::SaveCharacterCorpse(uint32 charid, const char* charname, ui
 					item->equip_slot,
 					item->item_id,
 					item->charges,
-					custom_data_str.c_str()
+					custom_data_str.length() ? custom_data_str.c_str() : ""
 				);
 			}
 		}
@@ -3305,7 +3305,7 @@ bool ZoneDatabase::SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, co
 		if (!item)
 			continue;
 
-		custom_data_str = Strings::Escape(EncodeCustomDataToString(&item->custom_data));
+		custom_data_str = Strings::Escape(EncodeCustomDataToString(item->custom_data));
 		if (first_entry != 1){
 			query = StringFormat("REPLACE INTO `character_corpse_items_backup` \n"
 				" (corpse_id, equip_slot, item_id, charges, custom_data) \n"
@@ -3314,7 +3314,7 @@ bool ZoneDatabase::SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, co
 				item->equip_slot,
 				item->item_id,
 				item->charges,
-				custom_data_str.c_str()
+				custom_data_str.length() ? custom_data_str.c_str() : ""
 			);
 			first_entry = 1;
 		}
@@ -3324,7 +3324,7 @@ bool ZoneDatabase::SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, co
 				item->equip_slot,
 				item->item_id,
 				item->charges,
-				custom_data_str.c_str()
+				custom_data_str.length() ? custom_data_str.c_str() : ""
 			);
 		}
 	}
@@ -3518,12 +3518,11 @@ bool ZoneDatabase::LoadCharacterCorpseData(uint32 corpse_id, CharacterCorpseEntr
 	corpse->itemcount = results.RowCount();
 	uint16 r = 0;
 	for (auto& row = results.begin(); row != results.end(); ++row) {
-		LootItem* corpse_item = new LootItem;
-		memset(corpse_item, 0, sizeof(LootItem));
+		LootItem* corpse_item = new LootItem();
 		corpse_item->equip_slot = atoi(row[r++]);		// equip_slot,
 		corpse_item->item_id = atoul(row[r++]); 		// item_id,
 		corpse_item->charges = atoi(row[r++]); 			// charges,
-		DecodeCustomDataFromString(&corpse_item->custom_data, row[r++]); // custom_Data
+		InitializeCustomDataFromString(corpse_item->custom_data, row[r++]); // custom_Data
 		corpse_item->min_looter_level = 0;
 		corpse_item->item_loot_lockout_timer = 0;
 		itemlist.push_back(corpse_item);

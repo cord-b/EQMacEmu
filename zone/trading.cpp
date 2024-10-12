@@ -787,7 +787,7 @@ void Client::FinishTrade(Mob* tradingWith, bool finalizer, void* event_entry)
 					{
 						if (GetGM() || (item->NoDrop != 0 && npc->CountQuestItem(item->ID) == 0))
 						{
-							npc->AddQuestLoot(item->ID, inst->GetCharges(), GetGM() ? nullptr : inst->GetCustomData());
+							npc->AddQuestLoot(item->ID, inst->GetCharges(), inst->GetCustomData());
 							Log(Logs::General, Logs::Trading, "Adding loot item %s to non-Quest NPC %s", item->Name, npc->GetName());
 						}
 					}

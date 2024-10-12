@@ -783,7 +783,7 @@ uint32 Corpse::CountItems() {
 	return itemlist.size();
 }
 
-void Corpse::AddItem(uint32 itemnum, int8 charges, int16 slot, const EQ::ItemCustomData* item_custom_data) {
+void Corpse::AddItem(uint32 itemnum, int8 charges, int16 slot, const EQ::ItemCustomData& item_custom_data) {
 	if (!database.GetItem(itemnum))
 		return;
 
@@ -791,17 +791,13 @@ void Corpse::AddItem(uint32 itemnum, int8 charges, int16 slot, const EQ::ItemCus
 
 	is_corpse_changed = true;
 
-	auto item = new LootItem;
-
-	memset(item, 0, sizeof(LootItem));
+	auto item = new LootItem();
 	item->item_id = itemnum;
 	item->charges = charges;
 	item->equip_slot = slot;
 	item->min_looter_level = 0;
 	item->item_loot_lockout_timer = 0;
-	if (item_custom_data) {
-		item->custom_data = *item_custom_data;
-	}
+	item->custom_data = item_custom_data; // map copy
 	itemlist.push_back(item);
 
 	UpdateEquipmentLight();
@@ -1577,7 +1573,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 						item = database.GetItem(item_data->item_id);
 						if(client && item && (item_data->quest == 0 || (item_data->quest == 1 && item->NoDrop != 0))) 
 						{
-							EQ::ItemInstance* inst = database.CreateItem(item, item_data->charges, &item_data->custom_data);
+							EQ::ItemInstance* inst = database.CreateItem(item, item_data->charges, item_data->custom_data);
 							if(inst) {
 								// SlotGeneral1 is the corpse inventory start offset for Ti(EMu) - CORPSE_END = SlotGeneral1 + SlotCursor
 								client->SendItemPacket(i, inst, ItemPacketLoot);
@@ -1726,7 +1722,7 @@ void Corpse::LootCorpseItem(Client* client, const EQApplicationPacket* app) {
 
 	if (item != 0) {
 		if (item_data){
-			inst = database.CreateItem(item, item_data->charges, &item_data->custom_data);
+			inst = database.CreateItem(item, item_data->charges, item_data->custom_data);
 		}
 		else {
 			inst = database.CreateItem(item);

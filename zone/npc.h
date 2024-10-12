@@ -201,8 +201,8 @@ public:
 	void	CleanQuestLootItems();
 	uint8	CountQuestItem(uint16 itemid);
 	uint8	CountQuestItems();
-	bool	AddQuestLoot(int16 itemid, int8 charges = 1, const EQ::ItemCustomData* item_custom_data = nullptr);
-	bool	AddPetLoot(int16 itemid, int8 charges = 1, bool fromquest = false, const EQ::ItemCustomData* item_custom_data = nullptr);
+	bool	AddQuestLoot(int16 itemid, int8 charges = 1, const EQ::ItemCustomData& item_custom_data = EQ::EmptyItemCustomData);
+	bool	AddPetLoot(int16 itemid, int8 charges = 1, bool fromquest = false, const EQ::ItemCustomData& item_custom_data = EQ::EmptyItemCustomData);
 	void	DeleteQuestLoot(int16 itemid1, int16 itemid2 = 0, int16 itemid3 = 0, int16 itemid4 = 0);
 	void	DeleteInvalidQuestLoot();
 
@@ -225,7 +225,7 @@ public:
 		bool quest = false, 
 		bool pet = false, 
 		bool force_equip = false,
-		const EQ::ItemCustomData* item_custom_data = nullptr
+		const EQ::ItemCustomData& item_custom_data = EQ::EmptyItemCustomData
 	);
 
 	void	DeleteEquipment(int16 slotid);

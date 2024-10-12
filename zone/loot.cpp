@@ -279,7 +279,7 @@ void NPC::AddLootDrop(
 	bool quest, 
 	bool pet, 
 	bool force_equip,
-	const EQ::ItemCustomData* item_custom_data)
+	const EQ::ItemCustomData& item_custom_data)
 {
 	if (!item2) {
 		return;
@@ -307,7 +307,7 @@ void NPC::AddLootDrop(
 	}
 
 	if (quest || pet) {
-		uint32 self_found_character_id = item_custom_data ? EQ::ItemInstance::GetSelfFoundCharacterID(*item_custom_data) : 0;
+		uint32 self_found_character_id = EQ::ItemInstance::GetSelfFoundCharacterID(item_custom_data);
 		LogLoot("Adding {} to npc: {}. Wearchange: {} Equipit: {} Multiquest: {} Pet: {} SsfOwner: {}", item2->Name, GetName(), wearchange, equipit, quest, pet, self_found_character_id);
 	}
 
@@ -320,8 +320,7 @@ void NPC::AddLootDrop(
 		p_wear_change_struct->material = 0;
 	}
 
-	auto item = new LootItem;
-	memset(item, 0, sizeof(LootItem));
+	auto item = new LootItem();
 	item->item_id = item2->ID;
 	item->charges = loot_drop.item_charges;
 	item->min_level = loot_drop.minlevel;
@@ -332,9 +331,7 @@ void NPC::AddLootDrop(
 	item->forced = false;
 	item->item_loot_lockout_timer = loot_drop.item_loot_lockout_timer;
 	item->min_looter_level = loot_drop.min_looter_level;
-	if (item_custom_data) {
-		item->custom_data = *item_custom_data;
-	}
+	item->custom_data = item_custom_data; // map copy
 
 	// unsure if required to equip, YOLO for now
 	if (item2->ItemType == EQ::item::ItemTypeBow) {
@@ -1298,7 +1295,7 @@ void NPC::RemoveLootCash() {
 	m_loot_platinum = 0;
 }
 
-bool NPC::AddQuestLoot(int16 itemid, int8 charges, const EQ::ItemCustomData* item_custom_data) {
+bool NPC::AddQuestLoot(int16 itemid, int8 charges, const EQ::ItemCustomData& item_custom_data) {
 	auto l = LootdropEntriesRepository::NewNpcEntity();
 
 	const EQ::ItemData* item = database.GetItem(itemid);
@@ -1318,7 +1315,7 @@ bool NPC::AddQuestLoot(int16 itemid, int8 charges, const EQ::ItemCustomData* ite
 	return true;
 }
 
-bool NPC::AddPetLoot(int16 itemid, int8 charges, bool fromquest, const EQ::ItemCustomData* item_custom_data) {
+bool NPC::AddPetLoot(int16 itemid, int8 charges, bool fromquest, const EQ::ItemCustomData& item_custom_data) {
 	auto l = LootdropEntriesRepository::NewNpcEntity();
 
 	const EQ::ItemData* item = database.GetItem(itemid);

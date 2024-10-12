@@ -52,7 +52,7 @@ static inline int32 GetNextItemInstSerialNumber() {
 //
 // class EQ::ItemInstance
 //
-EQ::ItemInstance::ItemInstance(const EQ::ItemData* item, int8 charges, const EQ::ItemCustomData* item_custom_data) {
+EQ::ItemInstance::ItemInstance(const EQ::ItemData* item, int8 charges, const EQ::ItemCustomData& item_custom_data) {
 	if(item) {
 		m_item = new EQ::ItemData(*item);
 	}
@@ -64,13 +64,10 @@ EQ::ItemInstance::ItemInstance(const EQ::ItemData* item, int8 charges, const EQ:
 	}
 
 	m_SerialNumber = GetNextItemInstSerialNumber();
-
-	if (item_custom_data) {
-		m_custom_data = *item_custom_data;
-	}
+	m_custom_data = item_custom_data; // map copy
 }
 
-EQ::ItemInstance::ItemInstance(SharedDatabase *db, int16 item_id, int8 charges, const EQ::ItemCustomData* item_custom_data) {
+EQ::ItemInstance::ItemInstance(SharedDatabase *db, int16 item_id, int8 charges, const EQ::ItemCustomData& item_custom_data) {
 
 	m_item = db->GetItem(item_id);
 	if(m_item) {
@@ -87,10 +84,7 @@ EQ::ItemInstance::ItemInstance(SharedDatabase *db, int16 item_id, int8 charges, 
 	}
 
 	m_SerialNumber = GetNextItemInstSerialNumber();
-
-	if (item_custom_data) {
-		m_custom_data = *item_custom_data;
-	}
+	m_custom_data = item_custom_data; // map copy
 }
 
 EQ::ItemInstance::ItemInstance(ItemInstTypes use_type) {
@@ -415,7 +409,7 @@ const EQ::ItemData* EQ::ItemInstance::GetItem() const
 }
 
 std::string EQ::ItemInstance::GetCustomDataString() const {
-	return SharedDatabase::EncodeCustomDataToString(&m_custom_data);
+	return SharedDatabase::EncodeCustomDataToString(m_custom_data);
 }
 
 std::string EQ::ItemInstance::GetCustomData(std::string identifier) {
@@ -519,34 +513,34 @@ size_t EQ::ItemInstance::GetSelfFoundCharacterName(char* out) const
 	return 0;
 }
 
-void EQ::ItemInstance::SetSelfFoundCharacter(const EQ::ItemData* item_data, EQ::ItemCustomData* custom_data, uint32 self_found_character_id, const char* name)
+void EQ::ItemInstance::SetSelfFoundCharacter(const EQ::ItemData* item_data, EQ::ItemCustomData& custom_data, uint32 self_found_character_id, const char* name)
 {
-	if (item_data && custom_data && self_found_character_id && !item_data->Stackable)
+	if (item_data && self_found_character_id && !item_data->Stackable)
 	{
 		// Don't overwrite if already set
-		if (custom_data->find(CUSTOM_DATA_SELF_FOUND_CHARACTER_ID) == custom_data->end()) {
+		if (custom_data.find(CUSTOM_DATA_SELF_FOUND_CHARACTER_ID) == custom_data.end()) {
 			std::stringstream ss;
 			ss << self_found_character_id;
-			(*custom_data)[CUSTOM_DATA_SELF_FOUND_CHARACTER_ID] = ss.str();
+			custom_data[CUSTOM_DATA_SELF_FOUND_CHARACTER_ID] = ss.str();
 			if (name && RuleB(SelfFound, PersonalizedItemNames)) {
 				std::string name_str = name;
-				(*custom_data)[CUSTOM_DATA_CACHED_SELF_FOUND_CHARACTER_NAME] = name_str;
+				custom_data[CUSTOM_DATA_CACHED_SELF_FOUND_CHARACTER_NAME] = name_str;
 			}
 		}
 	}
 }
 
-void EQ::ItemInstance::SetSelfFoundCharacter(const EQ::ItemData* item_data, EQ::ItemCustomData* custom_data, uint32 self_found_character_id, const std::string& name)
+void EQ::ItemInstance::SetSelfFoundCharacter(const EQ::ItemData* item_data, EQ::ItemCustomData& custom_data, uint32 self_found_character_id, const std::string& name)
 {
-	if (item_data && custom_data && self_found_character_id && !item_data->Stackable)
+	if (item_data && self_found_character_id && !item_data->Stackable)
 	{
 		// Don't overwrite if already set
-		if (custom_data->find(CUSTOM_DATA_SELF_FOUND_CHARACTER_ID) == custom_data->end()) {
+		if (custom_data.find(CUSTOM_DATA_SELF_FOUND_CHARACTER_ID) == custom_data.end()) {
 			std::stringstream ss;
 			ss << self_found_character_id;
-			(*custom_data)[CUSTOM_DATA_SELF_FOUND_CHARACTER_ID] = ss.str();
+			custom_data[CUSTOM_DATA_SELF_FOUND_CHARACTER_ID] = ss.str();
 			if (RuleB(SelfFound, PersonalizedItemNames)) {
-				(*custom_data)[CUSTOM_DATA_CACHED_SELF_FOUND_CHARACTER_NAME] = name;
+				custom_data[CUSTOM_DATA_CACHED_SELF_FOUND_CHARACTER_NAME] = name;
 			}
 		}
 	}

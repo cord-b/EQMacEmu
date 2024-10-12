@@ -246,7 +246,7 @@ bool Zone::LoadZoneObjects() {
 		data.charges = charges;
 		data.maxcharges = charges;
 		EQ::ItemCustomData custom_data;
-		database.DecodeCustomDataFromString(&custom_data, row[14]); // custom_data
+		database.InitializeCustomDataFromString(custom_data, row[14]); // custom_data
 
         EQ::ItemInstance* inst = nullptr;
         //FatherNitwit: this dosent seem to work...
@@ -257,7 +257,7 @@ bool Zone::LoadZoneObjects() {
         }
         else {
             // Groundspawn object
-            inst = database.CreateItem(itemid, charges, &custom_data);
+            inst = database.CreateItem(itemid, charges, custom_data);
         }
 
 		// Load child objects if container

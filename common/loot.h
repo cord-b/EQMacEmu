@@ -20,6 +20,21 @@ struct LootItem {
 	uint32	item_loot_lockout_timer;
 	EQ::ItemCustomData custom_data;
 
+	LootItem()
+	{
+		item_id = 0;
+		equip_slot = 0;
+		charges = 0;
+		lootslot = 0;
+		min_level = 0;
+		max_level = 0;
+		quest = 0;
+		pet = 0;
+		forced = false;
+		min_looter_level = 0;
+		item_loot_lockout_timer = 0;
+	}
+
 	uint32 GetSelfFoundCharacterID() const { return EQ::ItemInstance::GetSelfFoundCharacterID(custom_data); }
 
 };

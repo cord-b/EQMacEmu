@@ -1090,13 +1090,13 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 						// If the item was summoned by a self-found player, mark the item as owned by them
 						EQ::ItemCustomData item_custom_data;
 						if (caster && caster->IsClient() && (caster->CastToClient()->IsSelfFound() || caster->CastToClient()->IsSoloOnly())) {
-							EQ::ItemInstance::SetSelfFoundCharacter(item, &item_custom_data, caster->CastToClient()->CharacterID(), caster->CastToClient()->name);
+							EQ::ItemInstance::SetSelfFoundCharacter(item, item_custom_data, caster->CastToClient()->CharacterID(), caster->CastToClient()->name);
 						}
 
 						// For pets, all items are added to inventory, even if the
 						// item is summoned into a bag so that the pet can equip
 						// the item, if possible.
-						CastToNPC()->AddPetLoot(item->ID, quantity, &item_custom_data);
+						CastToNPC()->AddPetLoot(item->ID, quantity, false, item_custom_data);
 					}
 				} else if (caster) {
 					caster->Message_StringID(Chat::SpellFailure, SPELL_NO_EFFECT);

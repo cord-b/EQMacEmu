@@ -276,7 +276,7 @@ bool SharedDatabase::GetInventory(uint32 char_id, EQ::InventoryProfile* inv)
 		if (inst == nullptr)
 			continue;
 
-		DecodeCustomDataFromString(inst->GetCustomData(), row[3]);
+		InitializeCustomDataFromString(inst->GetCustomData(), row[3]);
 
         if(charges==0x7FFF)
             inst->SetCharges(-1);
@@ -333,7 +333,7 @@ bool SharedDatabase::GetInventory(uint32 account_id, char* name, EQ::InventoryPr
 		if (inst == nullptr)
 			continue;
 
-		DecodeCustomDataFromString(inst->GetCustomData(), row[3]);
+		InitializeCustomDataFromString(inst->GetCustomData(), row[3]);
 
         inst->SetCharges(charges);
 
@@ -936,7 +936,7 @@ bool SharedDatabase::LoadNPCFactionLists(const std::string &prefix)
 }
 
 // Create appropriate ItemInst class
-EQ::ItemInstance* SharedDatabase::CreateItem(uint32 item_id, int8 charges, const EQ::ItemCustomData* item_custom_data)
+EQ::ItemInstance* SharedDatabase::CreateItem(uint32 item_id, int8 charges, const EQ::ItemCustomData& item_custom_data)
 {
 	const EQ::ItemData* item = nullptr;
 	EQ::ItemInstance* inst = nullptr;
@@ -957,7 +957,7 @@ EQ::ItemInstance* SharedDatabase::CreateItem(uint32 item_id, int8 charges, const
 
 
 // Create appropriate ItemInst class
-EQ::ItemInstance* SharedDatabase::CreateItem(const EQ::ItemData* item, int8 charges, const EQ::ItemCustomData* item_custom_data)
+EQ::ItemInstance* SharedDatabase::CreateItem(const EQ::ItemData* item, int8 charges, const EQ::ItemCustomData& item_custom_data)
 {
 	EQ::ItemInstance* inst = nullptr;
 	if (item) {
@@ -973,7 +973,7 @@ EQ::ItemInstance* SharedDatabase::CreateItem(const EQ::ItemData* item, int8 char
 	return inst;
 }
 
-EQ::ItemInstance* SharedDatabase::CreateBaseItem(const EQ::ItemData* item, int8 charges, const EQ::ItemCustomData* item_custom_data)
+EQ::ItemInstance* SharedDatabase::CreateBaseItem(const EQ::ItemData* item, int8 charges, const EQ::ItemCustomData& item_custom_data)
 {
 	EQ::ItemInstance* inst = nullptr;
 	if (item) {
@@ -995,15 +995,14 @@ EQ::ItemInstance* SharedDatabase::CreateBaseItem(const EQ::ItemData* item, int8 
 	return inst;
 }
 
-std::string SharedDatabase::EncodeCustomDataToString(const EQ::ItemCustomData* custom_data)
+std::string SharedDatabase::EncodeCustomDataToString(const EQ::ItemCustomData& custom_data)
 {
-	if (!custom_data)
+	if (custom_data.empty())
 		return "";
 
 	std::string ret_val;
 
-	auto end = custom_data->cend();
-	for(auto iter = custom_data->cbegin(); iter != end; ++iter) {
+	for(auto iter = custom_data.cbegin(); iter != custom_data.cend(); ++iter) {
 		// keys starting with '#' will be treated as transient data and do not get encoded/saved.
 		if (!iter->first.empty() && iter->first[0] != '#') {
 			ret_val += iter->first;
@@ -1015,9 +1014,9 @@ std::string SharedDatabase::EncodeCustomDataToString(const EQ::ItemCustomData* c
 	return ret_val;
 }
 
-void SharedDatabase::DecodeCustomDataFromString(EQ::ItemCustomData* dst, const char* src)
+void SharedDatabase::InitializeCustomDataFromString(EQ::ItemCustomData& dst, const char* src)
 {
-	if (!dst || !src)
+	if (!src)
 		return;
 
 	std::string key;
@@ -1028,8 +1027,7 @@ void SharedDatabase::DecodeCustomDataFromString(EQ::ItemCustomData* dst, const c
 	{
 		if (src[i] == '^') {
 			if (!use_id) {
-				dst->erase(key);
-				dst->insert({ key, value });
+				dst[key] = value;
 				key.clear();
 				value.clear();
 			}
@@ -1045,12 +1043,13 @@ void SharedDatabase::DecodeCustomDataFromString(EQ::ItemCustomData* dst, const c
 
 	// If personalized item names are enabled, also load the character name and cache it in a transient key (not saved to DB)
 	if (RuleB(SelfFound, PersonalizedItemNames)) {
-		uint32 sf_character_id = EQ::ItemInstance::GetSelfFoundCharacterID(*dst);
+		uint32 sf_character_id = EQ::ItemInstance::GetSelfFoundCharacterID(dst);
 		if (sf_character_id) {
 			char char_name[64]{ 0 };
 			GetCharName(sf_character_id, char_name);
 			if (char_name[0] != 0) {
-				dst->insert({ CUSTOM_DATA_CACHED_SELF_FOUND_CHARACTER_NAME, char_name });
+				std::string name_str = char_name;
+				dst[CUSTOM_DATA_CACHED_SELF_FOUND_CHARACTER_NAME] = name_str;
 			}
 		}
 	}
