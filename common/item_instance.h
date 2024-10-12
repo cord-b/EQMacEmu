@@ -188,10 +188,6 @@ namespace EQ
 		// Setting 0 will not clear this field.
 		void SetContentsSelfFoundCharacter(uint32 self_found_character_id, const std::string& name);
 
-		// Clears the SF character ID.
-		// If an item becomes tainted by non-SF action, it should be cleared (e.g. combined a stack with a non-SF stack).
-		void ClearSelfFoundCharacterID();
-
 		// Is this item (and its contents, if a bag) all tags with this SF character id.
 		bool IsMatchingSelfFoundCharacterID(uint32 self_found_character_id, bool check_all_bag_contents) const;
 

@@ -527,9 +527,10 @@ void EQ::ItemInstance::SetSelfFoundCharacter(const EQ::ItemData* item_data, EQ::
 		if (custom_data->find(CUSTOM_DATA_SELF_FOUND_CHARACTER_ID) == custom_data->end()) {
 			std::stringstream ss;
 			ss << self_found_character_id;
-			custom_data->insert({ CUSTOM_DATA_SELF_FOUND_CHARACTER_ID , ss.str() });
-			if (RuleB(SelfFound, PersonalizedItemNames) && name) {
-				custom_data->insert({ CUSTOM_DATA_CACHED_SELF_FOUND_CHARACTER_NAME, name });
+			(*custom_data)[CUSTOM_DATA_SELF_FOUND_CHARACTER_ID] = ss.str();
+			if (name && RuleB(SelfFound, PersonalizedItemNames)) {
+				std::string name_str = name;
+				(*custom_data)[CUSTOM_DATA_CACHED_SELF_FOUND_CHARACTER_NAME] = name_str;
 			}
 		}
 	}
@@ -543,18 +544,12 @@ void EQ::ItemInstance::SetSelfFoundCharacter(const EQ::ItemData* item_data, EQ::
 		if (custom_data->find(CUSTOM_DATA_SELF_FOUND_CHARACTER_ID) == custom_data->end()) {
 			std::stringstream ss;
 			ss << self_found_character_id;
-			custom_data->insert({ CUSTOM_DATA_SELF_FOUND_CHARACTER_ID , ss.str() });
+			(*custom_data)[CUSTOM_DATA_SELF_FOUND_CHARACTER_ID] = ss.str();
 			if (RuleB(SelfFound, PersonalizedItemNames)) {
-				custom_data->insert({ CUSTOM_DATA_CACHED_SELF_FOUND_CHARACTER_NAME, name });
+				(*custom_data)[CUSTOM_DATA_CACHED_SELF_FOUND_CHARACTER_NAME] = name;
 			}
 		}
 	}
-}
-
-void EQ::ItemInstance::ClearSelfFoundCharacterID()
-{
-	m_custom_data.erase(CUSTOM_DATA_SELF_FOUND_CHARACTER_ID);
-	m_custom_data.erase(CUSTOM_DATA_CACHED_SELF_FOUND_CHARACTER_NAME);
 }
 
 void EQ::ItemInstance::SetContentsSelfFoundCharacter(uint32 self_found_character_id, const std::string& name)

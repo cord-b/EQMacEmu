@@ -4881,7 +4881,7 @@ void EntityList::SendDeletedSelfFoundMerchantInventory(Mob* merchant, int32 slot
 		Client* c = it->second;
 		if (c && (c->IsSoloOnly() || c->IsSelfFound()) && c->GetMerchantSession() == merchant->GetID())
 		{
-			if (ml.GetSelfFoundPurchaseLimit(c->CharacterID()) == 0) {
+			if (zone->GetSelfFoundPurchaseLimit(merchant->GetNPCTypeID(), ml.item, c->CharacterID()) == 0) {
 				auto delitempacket = new EQApplicationPacket(OP_ShopDelItem, sizeof(Merchant_DelItem_Struct));
 				Merchant_DelItem_Struct* delitem = (Merchant_DelItem_Struct*)delitempacket->pBuffer;
 				delitem->itemslot = slotid;

@@ -1021,9 +1021,9 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid)
 						bool can_see_item = true;
 						if (IsSoloOnly() || IsSelfFound())
 						{
-							bool can_purchase = ml.GetSelfFoundPurchaseLimit(CharacterID()) > 0;
+							bool can_purchase = zone->GetSelfFoundPurchaseLimit(npcid, item->ID, CharacterID()) > 0;
 							if (RuleB(SelfFound, PersonalizedItemNames) && can_purchase) {
-								inst->SetSelfFoundCharacter(CharacterID(), name); // Will show personalized item name in temp merchant inventory if allowed to repurchase
+								inst->SetSelfFoundCharacter(CharacterID(), name); // Shows personalized item name in temp merchant's buyback window
 							}
 							if (RuleB(SelfFound, TempMerchantFiltering)) {
 								can_see_item = can_purchase; // Won't display items unless they can purchase them

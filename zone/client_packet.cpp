@@ -8090,7 +8090,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 						if (IsSoloOnly() || IsSelfFound())
 						{
 							sf_tmpmer_used = true;
-							uint32 purchase_limit = ml.GetSelfFoundPurchaseLimit(CharacterID());
+							uint32 purchase_limit = zone->GetSelfFoundPurchaseLimit(tmp->GetNPCTypeID(), item_id, CharacterID());
 							if (purchase_limit <= 0)
 							{
 								Log(Logs::Detail, Logs::Trading, "[S/SF] TEMP: Blocked %s (%i) attempt to purchase item=%i slot=%i that had charges/qty %i/%i",
@@ -8166,7 +8166,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	if (reimbursement_used)
 		tmp_qty = prevcharges > 240 ? 240 : prevcharges;
 	else if (sf_tmpmer_used)
-		tmp_qty = 1;
+		tmp_qty = prevcharges > 0 ? 1 : 0; // we only support non-stackable SSF items, so qty more than 1 is not needed.
 	else if(tmpmer_used)
 		tmp_qty = prevcharges > 240 ? 240 : prevcharges;
 	// Regular merchantlist with limited supplies
