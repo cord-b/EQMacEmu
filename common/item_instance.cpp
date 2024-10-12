@@ -419,7 +419,7 @@ std::string EQ::ItemInstance::GetCustomDataString() const {
 }
 
 std::string EQ::ItemInstance::GetCustomData(std::string identifier) {
-	std::map<std::string, std::string>::const_iterator iter = m_custom_data.find(identifier);
+	auto iter = m_custom_data.find(identifier);
 	if (iter != m_custom_data.end()) {
 		return iter->second;
 	}

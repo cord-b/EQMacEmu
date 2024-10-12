@@ -33,6 +33,7 @@ class ItemParse;			// Parses item packets
 
 #include <list>
 #include <map>
+#include <unordered_map>
 
 
 // Specifies usage type for item inside EQ::ItemInstance
@@ -63,7 +64,7 @@ namespace EQ
 {
 	class InventoryProfile;
 
-	typedef std::map<std::string, std::string> ItemCustomData;
+	typedef std::unordered_map<std::string, std::string> ItemCustomData;
 
 	class ItemInstance
 	{
