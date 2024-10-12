@@ -1365,6 +1365,10 @@ void NPC::PickPocket(Client* thief)
 			inst = database.CreateItem(steal_items[random], charges[random]);
 			if (inst)
 			{
+				if (thief->IsSoloOnly() || thief->IsSelfFound())
+				{
+					inst->SetSelfFoundCharacter(thief->CharacterID(), thief->GetName());
+				}
 				const EQ::ItemData* item = inst->GetItem();
 				if (item)
 				{
