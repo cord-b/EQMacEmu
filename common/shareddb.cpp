@@ -158,7 +158,7 @@ bool SharedDatabase::UpdateInventorySlot(uint32 char_id, const EQ::ItemInstance*
 		" VALUES(%lu,%lu,%lu,%lu,'%s')",
 		(unsigned long)char_id, (unsigned long)slot_id, (unsigned long)inst->GetItem()->ID,
 		(unsigned long)charges,
-		custom_data_str.c_str());
+		custom_data_str.length() ? custom_data_str.c_str() : "");
 	auto results = QueryDatabase(query);
 
     // Save bag contents, if slot supports bag contents
@@ -1021,21 +1021,21 @@ void SharedDatabase::InitializeCustomDataFromString(EQ::ItemCustomData& dst, con
 
 	std::string key;
 	std::string value;
-	bool use_id = true;
+	bool parsing_key = true;
 
 	for (int i = 0; src[i] != 0; i++)
 	{
 		if (src[i] == '^') {
-			if (!use_id) {
+			if (!parsing_key) {
 				dst[key] = value;
 				key.clear();
 				value.clear();
 			}
 
-			use_id = !use_id;
+			parsing_key = !parsing_key;
 			continue;
 		}
-		if (use_id)
+		if (parsing_key)
 			key.push_back(src[i]);
 		else
 			value.push_back(src[i]);
