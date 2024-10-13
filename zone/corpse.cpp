@@ -655,13 +655,6 @@ Corpse::~Corpse() {
 	if (is_player_corpse && !(player_corpse_depop && corpse_db_id == 0)) {
 		Save();
 	}
-	LootItems::iterator cur, end;
-	cur = itemlist.begin();
-	end = itemlist.end();
-	for (; cur != end; ++cur) {
-		LootItem* item = *cur;
-		safe_delete(item);
-	}
 	itemlist.clear();
 	ResetLegacyItemLooterSet();
 }
@@ -791,7 +784,7 @@ void Corpse::AddItem(uint32 itemnum, int8 charges, int16 slot, const EQ::ItemCus
 
 	is_corpse_changed = true;
 
-	auto item = new LootItem();
+	std::shared_ptr<LootItem> item = std::make_shared<LootItem>();
 	item->item_id = itemnum;
 	item->charges = charges;
 	item->equip_slot = slot;
@@ -803,26 +796,26 @@ void Corpse::AddItem(uint32 itemnum, int8 charges, int16 slot, const EQ::ItemCus
 	UpdateEquipmentLight();
 }
 
-LootItem* Corpse::GetItem(uint16 lootslot, LootItem** bag_item_data) {
-	LootItem *sitem = nullptr, *sitem2 = nullptr;
+LootItem* Corpse::GetItem(uint16 lootslot, BagLootItems& bag_item_data) {
+	LootItem* sitem = nullptr;
 
 	LootItems::iterator cur, end;
 	cur = itemlist.begin();
 	end = itemlist.end();
 	for(; cur != end; ++cur) {
-		if((*cur)->lootslot == lootslot) {
-			sitem = *cur;
+		if (cur->get()->lootslot == lootslot) {
+			sitem = cur->get();
 			break;
 		}
 	}
 
-	if (sitem && bag_item_data && EQ::InventoryProfile::SupportsContainers(sitem->equip_slot)) {
+	if (sitem && EQ::InventoryProfile::SupportsContainers(sitem->equip_slot)) {
 		int16 bagstart = EQ::InventoryProfile::CalcSlotId(sitem->equip_slot, EQ::invbag::SLOT_BEGIN);
 
 		cur = itemlist.begin();
 		end = itemlist.end();
 		for (; cur != end; ++cur) {
-			sitem2 = *cur;
+			std::shared_ptr<LootItem> sitem2 = *cur;
 			if (sitem2->equip_slot >= bagstart && sitem2->equip_slot < bagstart + 10) {
 				bag_item_data[sitem2->equip_slot - bagstart] = sitem2;
 			}
@@ -832,17 +825,25 @@ LootItem* Corpse::GetItem(uint16 lootslot, LootItem** bag_item_data) {
 	return sitem;
 }
 
+LootItem* Corpse::GetItem(uint16 lootslot) {
+	for (std::shared_ptr<LootItem>& item : itemlist) {
+		if (item->lootslot == lootslot) {
+			return item.get();
+		}
+	}
+	return nullptr;
+}
+
 uint32 Corpse::GetWornItem(int16 equipSlot) const {
 	LootItems::const_iterator cur, end;
 	cur = itemlist.begin();
 	end = itemlist.end();
 	for (; cur != end; ++cur) {
-		LootItem* item = *cur;
+		LootItem* item = cur->get();
 		if (item->equip_slot == equipSlot) {
 			return item->item_id;
 		}
 	}
-
 	return 0;
 }
 
@@ -854,7 +855,7 @@ void Corpse::RemoveItem(uint16 lootslot) {
 	cur = itemlist.begin();
 	end = itemlist.end();
 	for (; cur != end; ++cur) {
-		LootItem* sitem = *cur;
+		LootItem* sitem = cur->get();
 		if (sitem->lootslot == lootslot) {
 			RemoveItem(sitem);
 			return;
@@ -865,7 +866,7 @@ void Corpse::RemoveItem(uint16 lootslot) {
 void Corpse::RemoveItem(LootItem* item_data)
 {
 	for (auto iter = itemlist.begin(); iter != itemlist.end(); ++iter) {
-		auto sitem = *iter;
+		LootItem* sitem = iter->get();
 		if (sitem != item_data) { continue; }
 
 		is_corpse_changed = true;
@@ -885,7 +886,6 @@ void Corpse::RemoveItem(LootItem* item_data)
 		if (UpdateActiveLight())
 			SendAppearancePacket(AppearanceType::Light, GetActiveLightType());
 
-		safe_delete(sitem);
 		return;
 	}
 }
@@ -1558,7 +1558,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 		int corpselootlimit = EQ::inventory::Lookup(EQ::versions::ConvertClientVersionToMobVersion(client->ClientVersion()))->InventoryTypeSize[EQ::invtype::typeCorpse];
 
 		for (; cur != end; ++cur) {
-			LootItem* item_data = *cur;
+			LootItem* item_data = cur->get();
 			item_data->lootslot = 0xFFFF;
 
 			// Don't display the item if it's in a bag
@@ -1603,7 +1603,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 				int8 slot = EQ::invslot::GENERAL_BEGIN;
 				for (; cur != end; ++cur) 
 				{
-					LootItem* item_data = *cur;
+					LootItem* item_data = cur->get();
 					item = database.GetItem(item_data->item_id);
 					if(item)
 					{
@@ -1703,9 +1703,9 @@ void Corpse::LootCorpseItem(Client* client, const EQApplicationPacket* app) {
 	}
 	const EQ::ItemData* item = nullptr;
 	EQ::ItemInstance *inst = nullptr;
-	LootItem* item_data = nullptr, * bag_item_data[10] = {};
+	LootItem* item_data = nullptr;
+	BagLootItems bag_item_data;
 
-	memset(bag_item_data, 0, sizeof(bag_item_data));
 	if (GetPlayerKillItem() > 1){
 		item = database.GetItem(GetPlayerKillItem());
 	}
@@ -1740,20 +1740,16 @@ void Corpse::LootCorpseItem(Client* client, const EQApplicationPacket* app) {
 
 		// search through bags for lore items
 		if (item && item->IsClassBag()) {
-			for (int i = 0; i < 10; i++) {
-				if (bag_item_data[i])
+			for (auto& kv : bag_item_data) {
+				const EQ::ItemData* bag_item = database.GetItem(kv.second->item_id);
+				if (bag_item && client->CheckLoreConflict(bag_item))
 				{
-					const EQ::ItemData* bag_item = 0;
-					bag_item = database.GetItem(bag_item_data[i]->item_id);
-					if (bag_item && client->CheckLoreConflict(bag_item))
-					{
-						client->Message(Chat::White, "You cannot loot this container. The %s inside is a Lore Item and you already have one.", bag_item->Name);
-						SendEndLootErrorPacket(client);
-						ResetLooter();
-						if (contains_legacy_item) { RemoveLegacyItemLooter(client->GetCleanName()); }
-						delete inst;
-						return;
-					}
+					client->Message(Chat::White, "You cannot loot this container. The %s inside is a Lore Item and you already have one.", bag_item->Name);
+					SendEndLootErrorPacket(client);
+					ResetLooter();
+					if (contains_legacy_item) { RemoveLegacyItemLooter(client->GetCleanName()); }
+					delete inst;
+					return;
 				}
 			}
 		}
@@ -1770,14 +1766,11 @@ void Corpse::LootCorpseItem(Client* client, const EQApplicationPacket* app) {
 						// Check that we are looting our own self found items only
 						can_loot = inst->IsMatchingSelfFoundCharacterID(client->CharacterID(), false);
 
-						// Is this needed? The bag contents are exploded/emptied when handed to pets
-						if (can_loot && item && item->IsClassBag())
-						{
-							for (int i = EQ::invbag::SLOT_BEGIN; i <= EQ::invbag::SLOT_END; i++) {
-								// Bag is not yet initialized with its ItemInstance objects
-								// Instead we have to iterate on 'bag_item_data', which has the custom_data
-								if (bag_item_data[i] && bag_item_data[i]->GetSelfFoundCharacterID() != client->CharacterID())
-								{
+						if (can_loot && item && item->IsClassBag()) {
+							// Bag is not yet initialized with its ItemInstance objects
+							// Instead we have to iterate on 'bag_item_data', which has the custom_data
+							for (auto& kv : bag_item_data) {
+								if (kv.second->GetSelfFoundCharacterID() != client->CharacterID()) {
 									can_loot = false;
 									break;
 								}
@@ -1881,17 +1874,18 @@ void Corpse::LootCorpseItem(Client* client, const EQApplicationPacket* app) {
 			database.DeleteItemOffCharacterCorpse(this->corpse_db_id, item_data->equip_slot, item_data->item_id);
 			/* Delete Item Instance */
 			RemoveItem(item_data->lootslot);
+			item_data = nullptr;
 		}
 
 		/* Remove Bag Contents */
 		if (item->IsClassBag() && (GetPlayerKillItem() != -1 || GetPlayerKillItem() != 1)) {
-			for (int i = EQ::invbag::SLOT_BEGIN; i <= EQ::invbag::SLOT_END; i++) {
-				if (bag_item_data[i]) {
-					/* Delete needs to be before RemoveItem because its deletes the pointer for item_data/bag_item_data */
-					database.DeleteItemOffCharacterCorpse(this->corpse_db_id, bag_item_data[i]->equip_slot, bag_item_data[i]->item_id);
-					/* Delete Item Instance */
-					RemoveItem(bag_item_data[i]);
-				}
+			for (auto kv : bag_item_data) {
+				LootItem* bagitem = kv.second.get();
+				/* Delete needs to be before RemoveItem because its deletes the pointer for item_data/bag_item_data */
+				database.DeleteItemOffCharacterCorpse(this->corpse_db_id, kv.second->equip_slot, kv.second->item_id);
+				/* Delete Item Instance */
+				RemoveItem(bagitem);
+				bagitem = nullptr;
 			}
 		}
 
@@ -1941,6 +1935,7 @@ void Corpse::LootCorpseItem(Client* client, const EQApplicationPacket* app) {
 		SendEndLootErrorPacket(client);
 		if (contains_legacy_item) { RemoveLegacyItemLooter(client->GetCleanName()); }
 		safe_delete(inst);
+		bag_item_data.clear();
 		return;
 	}
 
@@ -1954,6 +1949,7 @@ void Corpse::LootCorpseItem(Client* client, const EQApplicationPacket* app) {
 	}
 
 	safe_delete(inst);
+	bag_item_data.clear();
 }
 
 void Corpse::EndLoot(Client* client, const EQApplicationPacket* app)
@@ -2025,7 +2021,7 @@ void Corpse::QueryLoot(Client* to) {
 
 			EQ::SayLinkEngine linker;
 			linker.SetLinkType(EQ::saylink::SayLinkLootItem);
-			linker.SetLootData(current_item);
+			linker.SetLootData(current_item.get());
 
 			to->Message(
 				Chat::White,

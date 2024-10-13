@@ -3,6 +3,8 @@
 
 #include <list>
 #include <string>
+#include <memory>
+#include <unordered_map>
 #include "types.h"
 #include "item_instance.h"
 
@@ -39,6 +41,9 @@ struct LootItem {
 
 };
 
-typedef std::list<LootItem* > LootItems;
+typedef std::list<std::shared_ptr<LootItem>> LootItems;
+typedef std::unordered_map<int, std::shared_ptr<LootItem>> BagLootItems; // k = 0..9
+
+const BagLootItems EmptyBagLootItems;
 
 #endif

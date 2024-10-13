@@ -91,7 +91,8 @@ class Corpse : public Mob {
 
 	/* Corpse: Items */
 	uint32 GetWornItem(int16 equipSlot) const;
-	LootItem* GetItem(uint16 lootslot, LootItem** bag_item_data = 0); 
+	LootItem* GetItem(uint16 lootslot);
+	LootItem* GetItem(uint16 lootslot, BagLootItems& bag_item_data);
 	void SetPlayerKillItemID(int32 pk_item_id) { player_kill_item = pk_item_id; }
 	int32 GetPlayerKillItem() { return player_kill_item; } 
 	void RemoveItem(uint16 lootslot);

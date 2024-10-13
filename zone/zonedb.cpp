@@ -3163,7 +3163,7 @@ uint32 ZoneDatabase::SaveCharacterCorpse(uint32 charid, const char* charname, ui
 		uint8 first_entry = 0;
 		std::string custom_data_str;
 		for (auto it = items.cbegin(); it != items.cend(); it++) {
-			LootItem* item = *it;
+			LootItem* item = it->get();
 			if (!item)
 				continue;
 
@@ -3301,7 +3301,7 @@ bool ZoneDatabase::SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, co
 	uint8 first_entry = 0;
 	std::string custom_data_str;
 	for (auto it = items.cbegin(); it != items.cend(); it++) {
-		LootItem* item = *it;
+		LootItem* item = it->get();
 		if (!item)
 			continue;
 
@@ -3518,7 +3518,7 @@ bool ZoneDatabase::LoadCharacterCorpseData(uint32 corpse_id, CharacterCorpseEntr
 	corpse->itemcount = results.RowCount();
 	uint16 r = 0;
 	for (auto& row = results.begin(); row != results.end(); ++row) {
-		LootItem* corpse_item = new LootItem();
+		std::shared_ptr<LootItem> corpse_item = std::make_shared<LootItem>();
 		corpse_item->equip_slot = atoi(row[r++]);		// equip_slot,
 		corpse_item->item_id = atoul(row[r++]); 		// item_id,
 		corpse_item->charges = atoi(row[r++]); 			// charges,

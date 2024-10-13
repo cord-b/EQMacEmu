@@ -320,7 +320,7 @@ void NPC::AddLootDrop(
 		p_wear_change_struct->material = 0;
 	}
 
-	auto item = new LootItem();
+	std::shared_ptr<LootItem> item = std::make_shared<LootItem>();
 	item->item_id = item2->ID;
 	item->charges = loot_drop.item_charges;
 	item->min_level = loot_drop.minlevel;
@@ -358,7 +358,6 @@ void NPC::AddLootDrop(
 	);
 
 	if (!inst && !wearchange) {
-		safe_delete(item);
 		return;
 	}
 
@@ -447,7 +446,7 @@ void NPC::AddLootDrop(
 		}
 
 		bool range_forced = false;
-		auto sitem = GetItem(EQ::invslot::slotRange);
+		LootItem* sitem = GetItem(EQ::invslot::slotRange);
 		if (sitem && sitem->forced)	{
 			range_forced = true;
 			sitem = nullptr;
@@ -783,7 +782,7 @@ LootItem* NPC::GetItem(int slot_id, int16 itemid)
 	cur = m_loot_items.begin();
 	end = m_loot_items.end();
 	for (; cur != end; ++cur) {
-		LootItem* item = *cur;
+		LootItem* item = cur->get();
 		if (item->equip_slot == slot_id && (itemid == 0 || itemid == item->item_id)) {
 			return item;
 		}
@@ -791,13 +790,13 @@ LootItem* NPC::GetItem(int slot_id, int16 itemid)
 	return(nullptr);
 }
 
-LootItem* NPC::GetItemByID(int16 itemid) 
+LootItem* NPC::GetItemByID(int16 itemid)
 {
 	LootItems::iterator cur, end;
 	cur = m_loot_items.begin();
 	end = m_loot_items.end();
 	for (; cur != end; ++cur) {
-		LootItem* item = *cur;
+		LootItem* item = cur->get();
 		if (item->item_id == itemid) {
 			return item;
 		}
@@ -811,7 +810,7 @@ bool NPC::HasQuestLootItem(int16 itemid)
 	cur = m_loot_items.begin();
 	end = m_loot_items.end();
 	for(; cur != end; ++cur) {
-		LootItem* sitem = *cur;
+		LootItem* sitem = cur->get();
 		if(sitem && sitem->quest == 1 && sitem->item_id == itemid) 
 		{
 			return true;
@@ -827,7 +826,7 @@ bool NPC::HasPetLootItem(int16 itemid)
 	cur = m_loot_items.begin();
 	end = m_loot_items.end();
 	for (; cur != end; ++cur) {
-		LootItem* sitem = *cur;
+		LootItem* sitem = cur->get();
 		if (sitem && sitem->pet == 1 && sitem->item_id == itemid)
 		{
 			return true;
@@ -891,7 +890,7 @@ bool NPC::HasRequiredQuestLoot(int16 itemid1, int16 itemid2, int16 itemid3, int1
 	cur = m_loot_items.begin();
 	end = m_loot_items.end();
 	for(; cur != end; ++cur) {
-		LootItem* sitem = *cur;
+		LootItem* sitem = cur->get();
 		if(sitem && sitem->quest == 1) {
 			if (sitem->item_id == itemid1) {
 				++item1npc;
@@ -936,7 +935,7 @@ bool NPC::HasQuestLoot()
 	cur = m_loot_items.begin();
 	end = m_loot_items.end();
 	for(; cur != end; ++cur) {
-		LootItem* questitem = *cur;
+		LootItem* questitem = cur->get();
 		if(questitem && questitem->quest == 1) {
 			return true;
 		}
@@ -954,7 +953,7 @@ void NPC::CleanQuestLootItems()
 	end = m_loot_items.end();
 	uint8 count = 0;
 	for(; cur != end; ++cur) {
-		LootItem* quest_item = *cur;
+		LootItem* quest_item = cur->get();
 		if(quest_item && (quest_item->quest == 1 || quest_item->pet == 1)) {
 			uint8 count = CountQuestItem(quest_item->item_id);
 			if(count > 1 && quest_item->pet != 1) {
@@ -979,7 +978,7 @@ uint8 NPC::CountQuestItem(uint16 itemid)
 	end = m_loot_items.end();
 	uint8 count = 0;
 	for(; cur != end; ++cur) {
-		LootItem* sitem = *cur;
+		LootItem* sitem = cur->get();
 		if(sitem && sitem->item_id == itemid) {
 			++count;
 		}
@@ -995,7 +994,7 @@ uint8 NPC::CountQuestItems()
 	end = m_loot_items.end();
 	uint8 count = 0;
 	for(; cur != end; ++cur) {
-		LootItem* sitem = *cur;
+		LootItem* sitem = cur->get();
 		if(sitem && sitem->quest == 1) {
 			++count;
 		}
@@ -1010,7 +1009,7 @@ bool NPC::RemoveQuestLootItems(int16 itemid)
 	cur = m_loot_items.begin();
 	end = m_loot_items.end();
 	for (; cur != end; ++cur) {
-		LootItem* sitem = *cur;
+		LootItem* sitem = cur->get();
 		if (sitem && sitem->quest == 1) {
 			if(itemid == 0 || itemid == sitem->item_id) {
 				RemoveItem(sitem);
@@ -1028,7 +1027,7 @@ bool NPC::RemovePetLootItems(int16 itemid)
 	cur = m_loot_items.begin();
 	end = m_loot_items.end();
 	for (; cur != end; ++cur) {
-		LootItem* sitem = *cur;
+		LootItem* sitem = cur->get();
 		if (sitem && sitem->pet == 1) {
 			if (itemid == 0 || itemid == sitem->item_id) {
 				RemoveItem(sitem);
@@ -1086,7 +1085,7 @@ void NPC::RemoveItem(LootItem* item_data, uint8 quantity) {
 	}
 
 	for (auto iter = m_loot_items.begin(); iter != m_loot_items.end(); ++iter) {
-		LootItem* sitem = *iter;
+		LootItem* sitem = iter->get();
 		if (sitem != item_data) { continue; }
 
 		if (!sitem)
@@ -1225,7 +1224,7 @@ void NPC::QueryLoot(Client* to)
 
 			EQ::SayLinkEngine linker;
 			linker.SetLinkType(EQ::saylink::SayLinkLootItem);
-			linker.SetLootData(current_item);
+			linker.SetLootData(current_item.get());
 
 			to->Message(
 				Chat::White,
