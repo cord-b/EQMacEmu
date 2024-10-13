@@ -465,15 +465,12 @@ void EQ::ItemInstance::GetName(char* buf, size_t buf_len) const
 	{
 		const std::string* sf_name = GetSelfFoundCharacterName();
 		if (sf_name && !sf_name->empty()) {
-			size_t item_name_len = strlen(m_item->Name);
-			size_t p = sf_name->length();
-			if (p + item_name_len + 4 <= buf_len) {
-				memcpy(buf, sf_name->c_str(), p);
-				memcpy(&buf[p], "'s ", 3);
-				p += 3;
-				memcpy(&buf[p], m_item->Name, sizeof(m_item->Name) - p);
-				return;
+			const std::string format = RuleS(SelfFound, PersonalizedItemNameFormat);
+			int len = snprintf(buf, buf_len, format.c_str(), sf_name->c_str(), m_item->Name);
+			if (len < buf_len) {
+				return; // success
 			}
+			// personalized name was too long, fall-through to sending regular item name
 		}
 	}
 

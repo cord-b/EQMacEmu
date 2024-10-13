@@ -2198,8 +2198,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 					if (IsClient())
 					{
 						// For self found items, also print the Self Found status of the item.
-						// "Self Found Item: <name>'s <item>"
-						static const char* message_format = "Self Found Item: %s's %s.";
+						const std::string message_format = RuleS(SelfFound, IdentifyMessageFormat);
 
 						EQ::ItemInstance* cursor_item = CastToClient()->GetInv().GetItem(EQ::invslot::slotCursor);
 						if (cursor_item && cursor_item->HasSelfFoundCharacterID())
@@ -2208,11 +2207,11 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 							const std::string* cached_name = cursor_item->GetSelfFoundCharacterName();
 							if (CastToClient()->CharacterID() == self_found_character_id)
 							{
-								Message(Chat::Spells, message_format, CastToClient()->name, cursor_item->GetItem()->Name);
+								Message(Chat::Spells, message_format.c_str(), CastToClient()->name, cursor_item->GetItem()->Name);
 							}
 							else if (cached_name && !cached_name->empty())
 							{
-								Message(Chat::Spells, message_format, cached_name->c_str(), cursor_item->GetItem()->Name);
+								Message(Chat::Spells, message_format.c_str(), cached_name->c_str(), cursor_item->GetItem()->Name);
 							}
 							else
 							{
@@ -2220,7 +2219,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 								database.GetCharName(self_found_character_id, char_name);
 								if (char_name[0])
 								{
-									Message(Chat::Spells, message_format, char_name, cursor_item->GetItem()->Name);
+									Message(Chat::Spells, message_format.c_str(), char_name, cursor_item->GetItem()->Name);
 								}
 							}
 						}
