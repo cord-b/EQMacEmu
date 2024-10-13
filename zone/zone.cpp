@@ -640,19 +640,6 @@ int32 Zone::GetTempMerchantQtyNoSlot(uint32 NPCID, int16 itemid) {
 	return -1;
 }
 
-const TempMerchantList* Zone::GetTempMerchantListByItemId(uint32 NPCID, uint16 itemid) const
-{
-	auto it = tmpmerchanttable.find(NPCID);
-	if (it != tmpmerchanttable.end()) {
-		for (const TempMerchantList& ml : it->second) {
-			if (ml.item == itemid) {
-				return &ml;
-			}
-		}
-	}
-	return nullptr;
-}
-
 void Zone::LoadTempMerchantData() {
 	LogInfo("Loading Temporary Merchant Lists...");
 	std::string query = StringFormat(

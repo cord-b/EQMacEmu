@@ -8349,10 +8349,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 				// The item isn't fully out of stock, but it could be for SF characters
 				// Hide it from those who cannot buy any quantity
 				if (tmpmer_used && !reimbursement_used && !inst->IsStackable()) {
-					const TempMerchantList* ml = zone->GetTempMerchantListByItemId(tmp->GetNPCTypeID(), item_id);
-					if (ml) {
-						entity_list.SendDeletedSelfFoundMerchantInventory(tmp, mp->itemslot, *ml);
-					}
+					entity_list.SendDeletedSelfFoundMerchantInventory(tmp, mp->itemslot, item_id);
 				}
 			}
 			inst->SetCharges(new_charges);

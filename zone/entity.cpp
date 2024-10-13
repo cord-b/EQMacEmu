@@ -4871,7 +4871,7 @@ void EntityList::SendTraderUpdateMessage(Client* merchant, const EQ::ItemData* i
 	return;
 }
 
-void EntityList::SendDeletedSelfFoundMerchantInventory(Mob* merchant, int32 slotid, const TempMerchantList& ml)
+void EntityList::SendDeletedSelfFoundMerchantInventory(Mob* merchant, int32 slotid, uint32 itemid)
 {
 	if (!merchant || !merchant->IsNPC())
 		return;
@@ -4881,7 +4881,7 @@ void EntityList::SendDeletedSelfFoundMerchantInventory(Mob* merchant, int32 slot
 		Client* c = it->second;
 		if (c && (c->IsSoloOnly() || c->IsSelfFound()) && c->GetMerchantSession() == merchant->GetID())
 		{
-			if (zone->GetSelfFoundPurchaseLimit(merchant->GetNPCTypeID(), ml.item, c->CharacterID()) == 0) {
+			if (zone->GetSelfFoundPurchaseLimit(merchant->GetNPCTypeID(), itemid, c->CharacterID()) == 0) {
 				auto delitempacket = new EQApplicationPacket(OP_ShopDelItem, sizeof(Merchant_DelItem_Struct));
 				Merchant_DelItem_Struct* delitem = (Merchant_DelItem_Struct*)delitempacket->pBuffer;
 				delitem->itemslot = slotid;
