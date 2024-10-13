@@ -371,15 +371,15 @@ int Zone::SaveTempItem(uint32 merchantid, uint32 npcid, uint32 item, int32 charg
 						if (RuleB(SelfFound, TempMerchantSupport))
 						{
 							if (self_found_character_id) {
-								uint32 sf_character_purchase_limit = IncreaseSelfFoundPurchaseLimit(merchantid, item, self_found_character_id, 1);
+								uint32 sf_character_purchase_limit = IncreaseSelfFoundPurchaseLimit(npcid, item, self_found_character_id, 1);
 								Log(Logs::Detail, Logs::Trading, "[S/SF] TEMP: Sale of item %i that belonged to character %i. They may repurchase %i copies.",
 									item, self_found_character_id, sf_character_purchase_limit);
 							}
-							CapSelfFoundPurchaseLimitsByAvailableQuantity(merchantid, item, ml.quantity);
+							CapSelfFoundPurchaseLimitsByAvailableQuantity(npcid, item, ml.quantity);
 						}
 						else
 						{
-							CapSelfFoundPurchaseLimitsByAvailableQuantity(merchantid, item, 0);
+							CapSelfFoundPurchaseLimitsByAvailableQuantity(npcid, item, 0);
 						}
 					}
 
@@ -397,15 +397,15 @@ int Zone::SaveTempItem(uint32 merchantid, uint32 npcid, uint32 item, int32 charg
 							if (RuleB(SelfFound, TempMerchantSupport))
 							{
 								if (self_found_character_id) {
-									uint32 sf_character_purchase_limit = DecreaseSelfFoundPurchaseLimit(merchantid, item, self_found_character_id, 1);
+									uint32 sf_character_purchase_limit = DecreaseSelfFoundPurchaseLimit(npcid, item, self_found_character_id, 1);
 									Log(Logs::Detail, Logs::Trading, "[S/SF] TEMP: Purchase of item %i by character %i. They may purchase %i more copies.",
 										item, self_found_character_id, sf_character_purchase_limit);
 								}
-								CapSelfFoundPurchaseLimitsByAvailableQuantity(merchantid, item, ml.quantity);
+								CapSelfFoundPurchaseLimitsByAvailableQuantity(npcid, item, ml.quantity);
 							}
 							else
 							{
-								CapSelfFoundPurchaseLimitsByAvailableQuantity(merchantid, item, 0);
+								CapSelfFoundPurchaseLimitsByAvailableQuantity(npcid, item, 0);
 							}
 						}
 						else
@@ -456,7 +456,7 @@ int Zone::SaveTempItem(uint32 merchantid, uint32 npcid, uint32 item, int32 charg
 		{
 			if (self_found_character_id && database.ItemQuantityType(item) != EQ::item::Quantity_Stacked)
 			{
-				IncreaseSelfFoundPurchaseLimit(merchantid, item, self_found_character_id, 1);
+				IncreaseSelfFoundPurchaseLimit(npcid, item, self_found_character_id, 1);
 				Log(Logs::Detail, Logs::Trading, "[S/SF] TEMP: Sale of item %i to that belonged to character %i. They may repurchase 1 copy.", item, self_found_character_id);
 			}
 		}
@@ -866,12 +866,12 @@ void Zone::ClearMerchantLists()
 	}
 }
 
-uint32 Zone::GetSelfFoundPurchaseLimit(uint32 merchantid, uint32 item, uint32 self_found_character_id)
+uint32 Zone::GetSelfFoundPurchaseLimit(uint32 npctype_id, uint32 item, uint32 self_found_character_id)
 {
 	if (self_found_character_id == 0)
 		return 0;
 
-	auto merchant_iter = tmpmerchanttable_ssf_purchase_limits.find(merchantid);
+	auto merchant_iter = tmpmerchanttable_ssf_purchase_limits.find(npctype_id);
 	if (merchant_iter == tmpmerchanttable_ssf_purchase_limits.end())
 		return 0;
 
@@ -885,12 +885,12 @@ uint32 Zone::GetSelfFoundPurchaseLimit(uint32 merchantid, uint32 item, uint32 se
 	return item_iter->second;
 }
 
-uint32 Zone::IncreaseSelfFoundPurchaseLimit(uint32 merchantid, uint32 item, uint32 self_found_character_id, uint32 increment_by)
+uint32 Zone::IncreaseSelfFoundPurchaseLimit(uint32 npctype_id, uint32 item, uint32 self_found_character_id, uint32 increment_by)
 {
 	if (self_found_character_id == 0)
 		return 0;
 
-	MerchantSsfPurchaseLimits& merchant_limits = tmpmerchanttable_ssf_purchase_limits[merchantid];
+	MerchantSsfPurchaseLimits& merchant_limits = tmpmerchanttable_ssf_purchase_limits[npctype_id];
 
 	SsfItemKey key(item, self_found_character_id);
 	auto item_iter = merchant_limits.find(key);
@@ -908,12 +908,12 @@ uint32 Zone::IncreaseSelfFoundPurchaseLimit(uint32 merchantid, uint32 item, uint
 	return newqty;
 }
 
-uint32 Zone::DecreaseSelfFoundPurchaseLimit(uint32 merchantid, uint32 item, uint32 self_found_character_id, uint32 decrement_by)
+uint32 Zone::DecreaseSelfFoundPurchaseLimit(uint32 npctype_id, uint32 item, uint32 self_found_character_id, uint32 decrement_by)
 {
 	if (self_found_character_id == 0)
 		return 0;
 
-	auto merchant_iter = tmpmerchanttable_ssf_purchase_limits.find(merchantid);
+	auto merchant_iter = tmpmerchanttable_ssf_purchase_limits.find(npctype_id);
 	if (merchant_iter == tmpmerchanttable_ssf_purchase_limits.end())
 		return 0;
 
@@ -933,9 +933,9 @@ uint32 Zone::DecreaseSelfFoundPurchaseLimit(uint32 merchantid, uint32 item, uint
 	return item_iter->second;
 }
 
-void Zone::CapSelfFoundPurchaseLimitsByAvailableQuantity(uint32 merchantid, uint32 item, uint32 quantity_in_stock)
+void Zone::CapSelfFoundPurchaseLimitsByAvailableQuantity(uint32 npctype_id, uint32 item, uint32 quantity_in_stock)
 {
-	auto merchant_iter = tmpmerchanttable_ssf_purchase_limits.find(merchantid);
+	auto merchant_iter = tmpmerchanttable_ssf_purchase_limits.find(npctype_id);
 	if (merchant_iter == tmpmerchanttable_ssf_purchase_limits.end())
 		return;
 

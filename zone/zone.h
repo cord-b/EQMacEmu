@@ -228,10 +228,10 @@ public:
 	void	SaveMerchantItem(uint32 merchantid, int16 item, int8 charges, int8 slot);
 	void	ResetMerchantQuantity(uint32 merchantid);
 	void	ClearMerchantLists();
-	uint32  GetSelfFoundPurchaseLimit(uint32 merchantid, uint32 item, uint32 self_found_character_id);
-	uint32  IncreaseSelfFoundPurchaseLimit(uint32 merchantid, uint32 item, uint32 self_found_character_id, uint32 increment_by);
-	uint32  DecreaseSelfFoundPurchaseLimit(uint32 merchantid, uint32 item, uint32 self_found_character_id, uint32 decrement_by);
-	void    CapSelfFoundPurchaseLimitsByAvailableQuantity(uint32 merchantid, uint32 item, uint32 quantity_in_stock);
+	uint32  GetSelfFoundPurchaseLimit(uint32 npctype_id, uint32 item, uint32 self_found_character_id);
+	uint32  IncreaseSelfFoundPurchaseLimit(uint32 npctype_id, uint32 item, uint32 self_found_character_id, uint32 increment_by);
+	uint32  DecreaseSelfFoundPurchaseLimit(uint32 npctype_id, uint32 item, uint32 self_found_character_id, uint32 decrement_by);
+	void    CapSelfFoundPurchaseLimitsByAvailableQuantity(uint32 npctype_id, uint32 item, uint32 quantity_in_stock);
 
 	uint8	GetZoneExpansion() { return newzone_data.expansion; }
 	uint16	GetPullLimit();
