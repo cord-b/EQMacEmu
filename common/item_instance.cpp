@@ -408,8 +408,8 @@ const EQ::ItemData* EQ::ItemInstance::GetItem() const
 	return m_item;
 }
 
-std::string EQ::ItemInstance::GetCustomDataString() const {
-	return SharedDatabase::EncodeCustomDataToString(m_custom_data);
+std::string EQ::ItemInstance::GetCustomDataString(bool include_transient_keys) const {
+	return SharedDatabase::EncodeCustomDataToString(m_custom_data, include_transient_keys);
 }
 
 std::string EQ::ItemInstance::GetCustomData(std::string identifier) {

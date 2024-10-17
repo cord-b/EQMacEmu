@@ -703,7 +703,7 @@ uint32 ZoneDatabase::AddObject(uint32 type, uint32 icon, const Object_Struct& ob
 	if (inst && inst->GetItem()) {
 		item_id = inst->GetItem()->ID;
 		charges = inst->GetCharges();
-		custom_data_str = Strings::Escape(inst->GetCustomDataString());
+		custom_data_str = Strings::Escape(inst->GetCustomDataString(false));
 	}
 
 	// SQL Escape object_name
@@ -759,7 +759,7 @@ void ZoneDatabase::UpdateObject(uint32 id, uint32 type, uint32 icon, const Objec
 	if (inst && inst->GetItem()) {
 		item_id = inst->GetItem()->ID;
 		charges = inst->GetCharges();
-		custom_data_str = Strings::Escape(inst->GetCustomDataString());
+		custom_data_str = Strings::Escape(inst->GetCustomDataString(false));
 	}
 
 	// SQL Escape object_name

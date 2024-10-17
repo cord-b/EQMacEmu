@@ -53,6 +53,7 @@ public:
 	uint32 GetSelfFoundCharacterID();
 	void SetSelfFoundCharacter(uint32 self_found_character_id, std::string name);
 	std::string GetCustomDataString();
+	std::string GetCustomDataString(bool include_transient_keys);
 	void SetCustomData(std::string identifier, std::string value);
 	void SetCustomData(std::string identifier, int value);
 	void SetCustomData(std::string identifier, float value);

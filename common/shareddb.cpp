@@ -150,7 +150,7 @@ bool SharedDatabase::UpdateInventorySlot(uint32 char_id, const EQ::ItemInstance*
 	else
 		charges = 0x7FFF;
 
-	std::string custom_data_str = Strings::Escape(inst->GetCustomDataString());
+	std::string custom_data_str = Strings::Escape(inst->GetCustomDataString(false));
 
 	// Update/Insert item
 	std::string query = StringFormat("REPLACE INTO character_inventory "
@@ -995,7 +995,7 @@ EQ::ItemInstance* SharedDatabase::CreateBaseItem(const EQ::ItemData* item, int8 
 	return inst;
 }
 
-std::string SharedDatabase::EncodeCustomDataToString(const EQ::ItemCustomData& custom_data)
+std::string SharedDatabase::EncodeCustomDataToString(const EQ::ItemCustomData& custom_data, bool include_transient_keys)
 {
 	if (custom_data.empty())
 		return "";
@@ -1003,8 +1003,8 @@ std::string SharedDatabase::EncodeCustomDataToString(const EQ::ItemCustomData& c
 	std::string ret_val;
 
 	for(auto iter = custom_data.cbegin(); iter != custom_data.cend(); ++iter) {
-		// keys starting with '#' will be treated as transient data and do not get encoded/saved.
-		if (!iter->first.empty() && iter->first[0] != '#') {
+		// keys starting with '#' will be treated as transient data and do not get encoded unless include_transient_keys==true.
+		if (!iter->first.empty() && (include_transient_keys || iter->first[0] != '#')) {
 			ret_val += iter->first;
 			ret_val += "^";
 			ret_val += iter->second;
@@ -1014,7 +1014,7 @@ std::string SharedDatabase::EncodeCustomDataToString(const EQ::ItemCustomData& c
 	return ret_val;
 }
 
-void SharedDatabase::InitializeCustomDataFromString(EQ::ItemCustomData& dst, const char* src)
+void SharedDatabase::ParseCustomDataFromString(EQ::ItemCustomData& dst, const char* src)
 {
 	if (!src)
 		return;
@@ -1040,11 +1040,16 @@ void SharedDatabase::InitializeCustomDataFromString(EQ::ItemCustomData& dst, con
 		else
 			value.push_back(src[i]);
 	}
+}
+
+void SharedDatabase::InitializeCustomDataFromString(EQ::ItemCustomData& dst, const char* src)
+{
+	ParseCustomDataFromString(dst, src);
 
 	// If personalized item names are enabled, also load the character name and cache it in a transient key (not saved to DB)
 	if (RuleB(SelfFound, PersonalizedItemNames)) {
 		uint32 sf_character_id = EQ::ItemInstance::GetSelfFoundCharacterID(dst);
-		if (sf_character_id) {
+		if (sf_character_id && dst.find(CUSTOM_DATA_CACHED_SELF_FOUND_CHARACTER_NAME) == dst.end()) {
 			char char_name[64]{ 0 };
 			GetCharName(sf_character_id, char_name);
 			if (char_name[0] != 0) {

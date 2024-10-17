@@ -151,7 +151,7 @@ namespace EQ
 
 		ItemCustomData& GetCustomData() { return m_custom_data; }
 		const ItemCustomData& GetCustomData() const { return m_custom_data; }
-		std::string GetCustomDataString() const;
+		std::string GetCustomDataString(bool include_transient_keys) const;
 		std::string GetCustomData(std::string identifier);
 		void SetCustomData(std::string identifier, std::string value);
 		void SetCustomData(std::string identifier, int value);
@@ -159,7 +159,7 @@ namespace EQ
 		void SetCustomData(std::string identifier, bool value);
 		void DeleteCustomData(std::string identifier);
 
-		void GetName(char* buf, size_t buf_len) const; // Automatically applies rule SelfFound:FoundPersonalizedItemNames
+		void GetName(char* buf, size_t buf_len) const; // Automatically applies rule SelfFound:PersonalizedItemNames
 
 		// Did a SF character originally acquire this item.
 		bool HasSelfFoundCharacterID() const;

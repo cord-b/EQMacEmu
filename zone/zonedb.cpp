@@ -464,7 +464,7 @@ void ZoneDatabase::SaveWorldContainer(uint32 zone_id, uint32 parent_id, const EQ
 		}
 
         uint32 item_id = inst->GetItem()->ID;
-        custom_data_str = Strings::Escape(inst->GetCustomDataString());
+        custom_data_str = Strings::Escape(inst->GetCustomDataString(false));
 
         std::string query = StringFormat("REPLACE INTO object_contents "
                                         "(zoneid, parentid, bagidx, itemid, charges, custom_data, droptime) "
@@ -3167,7 +3167,7 @@ uint32 ZoneDatabase::SaveCharacterCorpse(uint32 charid, const char* charname, ui
 			if (!item)
 				continue;
 
-			custom_data_str = Strings::Escape(EncodeCustomDataToString(item->custom_data));
+			custom_data_str = Strings::Escape(EncodeCustomDataToString(item->custom_data, false));
 			if (first_entry != 1) {
 				corpse_items_query = StringFormat("REPLACE INTO `character_corpse_items` \n"
 					" (corpse_id, equip_slot, item_id, charges, custom_data) \n"
@@ -3305,7 +3305,7 @@ bool ZoneDatabase::SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, co
 		if (!item)
 			continue;
 
-		custom_data_str = Strings::Escape(EncodeCustomDataToString(item->custom_data));
+		custom_data_str = Strings::Escape(EncodeCustomDataToString(item->custom_data, false));
 		if (first_entry != 1){
 			query = StringFormat("REPLACE INTO `character_corpse_items_backup` \n"
 				" (corpse_id, equip_slot, item_id, charges, custom_data) \n"
