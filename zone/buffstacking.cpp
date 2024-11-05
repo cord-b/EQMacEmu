@@ -571,6 +571,7 @@ int Mob::FindAffectSlot(Mob *caster, uint16 spell_id, int *result_slotnum, int r
 	if (caster->GetClass() == BARD && old_spelldata->classes[BARD - 1] == 255) // Bard caster and old buff is not a bard song
 	{
 		if (new_spelldata->goodEffect
+			&& !(RuleB(Quarm, AllowBardSelosBuffStacking) && old_spelldata->goodEffect) // <- Quarm: allows selos to stack with beneficial movement buffs
 			&& GetSpellEffectIndex(new_spelldata->id, SE_MovementSpeed) != -1
 			&& GetSpellEffectIndex(old_spelldata->id, SE_MovementSpeed) != -1
 			|| new_spelldata->goodEffect
@@ -598,13 +599,21 @@ int Mob::FindAffectSlot(Mob *caster, uint16 spell_id, int *result_slotnum, int r
 					if (old_spell_bard_level)
 					{
 						if (old_spell_bard_level != 255 && new_spelldata->classes[BARD - 1] == 255)
-							goto BLOCKED_BUFF;                // regular SoW type spell can't overwrite bard Selos
+						{
+							if (RuleB(Quarm, AllowBardSelosBuffStacking))
+							{
+								goto STACK_OK;
+							}
+							else
+							{
+								goto BLOCKED_BUFF;                // regular SoW type spell can't overwrite bard Selos
+							}
+						}
 					}
 				}
 			}
 		}
 	}
-
 
 	// below is a for loop that's kind of decomposed with gotos, comparing each effect slot
 	effect_slot_num = 0;
